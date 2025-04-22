@@ -44,7 +44,10 @@ INSTALLED_APPS = [
     'TimeManagement',
 ]
 
+
 MIDDLEWARE = [
+    'django.middleware.gzip.GZipMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -92,7 +95,7 @@ DATABASES = {
     default=config('DATABASE_URL'),
     conn_max_age=600,
     ssl_require=True
-    )
+    ),
 }
 
 # Password validation
