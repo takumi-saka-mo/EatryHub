@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Eatry Hub</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg bg-dark py-3 fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="#">
+          <h2 class="text-white pt-1">Eatry Hub</h2>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+          <div class="navbar-nav ms-auto">
+            <a class="nav-link active" href="{% url 'EatryHub:index' %}">Home</a>
+            <a class="nav-link" href="#">Time Management</a>
+            <a class="nav-link" href="#">Vacant Prediction</a>
+            <a class="nav-link" href="#">Shift via LINE</a>
+            <a class="nav-link" href="#">Cost Calculation</a>
+            <a class="nav-link" href="#">Dashboard</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero vh-100 d-flex align-items-center" id="home">
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-7 mx-auto text-center">
+            <h1 class="display-1 mt-5">Eatry Hub</h1>
+            <p class="text my-3 mt-2">飲食店運営のための統合型業務アプリケーション</p>
+            <a href="{% url 'EatryHub:login' %}" class="btn btn-primary me-2">ログイン</a>
+            <button class="btn btn-outline-light" disabled>新規登録</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Service Section -->
+    <section id="services">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 mx-auto text-center">
+                    <h6 class="text-primary">SERVICES</h6>
+                    <h1>Eatry Hub</h1>
+                    <p>飲食店運営のための統合型業務アプリケーション<br>
+                        時間管理、シフト調整、人件費管理など、店舗運営に欠かせない業務をすべて1つまとめたプラットフォーム。<br>
+                        効率化と顧客満足度の向上を同時に実現し、スタッフや管理者の負担を軽減します。</p>
+                    
+                </div>
+            </div>
+            
+            <div class="row g-4 mt-2">
+                <div class="col-lg-4 col-sm-6">
+                    <div class="service card-effect">
+                        <div class="iconbox">
+                            <i class="bx bx-timer"></i>
+                        </div>
+                        <h4 class="mt-4 mb-2">Time Management</h4>
+                        <h6 class="mt-2 mb-2"><b>時間管理システム</b></h6>
+                        <h6 class="mt-2 mb-2">店舗の各テーブルの状況(使用中、清掃中、空席)<br>をリアルタイムで表示。</h6>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <div class="service card-effect">
+                        <div class="iconbox">
+                            <i class="bx bx-desktop"></i>
+                        </div>
+                        <h4 class="mt-4 mb-2">Vacant Prediction</h4>
+                        <h6 class="mt-2 mb-2"><b>空席予測モニター</b></h6>
+                        <h6 class="mt-2 mb-2">空席予定や待ち時間を表示し、配席を効率化。<br>◯名席 : ◯分後空き</h6>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <div class="service card-effect">
+                        <div class="iconbox">
+                            <i class="bx bx-calendar"></i>
+                        </div>
+                        <h4 class="mt-4 mb-2">Shift via LINE</h4>
+                        <h6 class="mt-2 mb-2"><b>リアルタイム席管理</b></h6>
+                        <h6 class="mt-2 mb-2">LINEにてフォームを送信。希望シフトを収集・整理・任意の形式で出力</h6>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <div class="service card-effect">
+                        <div class="iconbox">
+                            <i class="bx bx-calculator"></i>
+                        </div>
+                        <h4 class="mt-4 mb-2">Cost Calculation</h4>
+                        <h6 class="mt-2 mb-2"><b>人件費の計算</b></h6>
+                        <h6 class="mt-2 mb-2">収集シフトデータを基に 人件費使用率を計算。<br>スタッフの勤務時間を管理</h6>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-6">
+                    <div class="service card-effect">
+                        <div class="iconbox">
+                            <i class="bx bxs-dashboard"></i>
+                        </div>
+                        <h4 class="mt-4 mb-2">Dashbord</h4>
+                        <h6 class="mt-2 mb-2"><b>ダッシュボード</b></h6>
+                        <h6 class="mt-2 mb-2">データベースで保存された来店情報等をダッシュボードとして可視化</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+     <!-- Footer Section -->
+     <footer>
+        <div class="footer-top">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h2 class="text-white">Eatry Hub</h2>
+                    </div>
+                    <div class="col-md-2">
+                        <h5 class="text-white">Brand</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="#">About</a></li>
+                            <li><a href="#">Services</a></li>
+                            <li><a href="#">Features</a></li>
+                            <li><a href="#">Pricing</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-2">
+                        <h5 class="text-white">More</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="#">FAQ&'s</a></li>
+                            <li><a href="#">Services</a></li>
+                            <li><a href="#">Features</a></li>
+                            <li><a href="#">Pricing</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5 class="text-white">Pages</h5>
+                        <ul class="list-unstyled">
+                            <li><a href="#">FAQ&'s</a></li>
+                            <li><a href="#">Services</a></li>
+                            <li><a href="#">Features</a></li>
+                            <li><a href="#">Pricing</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token }}">
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'EatryHub/home.css' %}">
+        <title>{% block title %}Home - Eatry Hub{% endblock %}</title>
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+        <!-- adminLTE 管理画面UI -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css" integrity="sha512-mxrUXSjrxl8vm5GwafxcqTrEwO1/oBNU25l20GODsysHReZo4uhVISzAKzaABH6/tTfAxZrY2FprmeAP5UZY8A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <link href="https://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css" rel="stylesheet">
+        <!-- Google Font (Sora) -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
+
+        <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
+        <!-- dhtmlxGantt CSS -->
+        <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css">
+
+    </head>
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+
+        <!-- Navbar -->
+        <nav class="main-header navbar navbar-custom navbar-expand navbar-white navbar-light">
+            <!-- Left navbar links -->
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+                </li>
+                <li class="nav-item d-none d-sm-inline-block">
+                    <a href="{% url 'EatryHub:home' %}" class="nav-link">Home</a>
+                </li>
+            </ul>
+
+            <!-- Top navbar links -->
+            <ul class="navbar-nav navbar-custom ml-auto">
+                <!-- 通知 -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link" data-toggle="dropdown" href="#">
+                        <i class="far fa-bell"></i>
+                        <span class="badge badge-warning navbar-badge">1</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                        <span class="dropdown-header">1 件の通知</span>
+                        <div class="dropdown-divider"></div>
+                        <a href="" class="dropdown-item">
+                            <i class="fas fa-envelope mr-2"></i>ver1.0.0がリリースしました
+                            <span class="float-right text-muted text-sm"></span>
+                        </a>
+                    </div>
+                </li>
+                <!-- フルスクリーン -->
+                <li class="nav-item">
+                    <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                    </a>
+                </li>
+                <!-- ログアウトボタン -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'EatryHub:logout' %}" role="button">
+                        <box-icon name='log-out'></box-icon>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+
+        <!-- メインナビゲーションバー -->
+        <aside class="main-sidebar navbar-custom sidebar-dark-primary elevation-4">
+            <!-- Brand Logo -->
+            <a href="{% url 'EatryHub:home' %}" class="brand-link">
+                <span class="brand-text navbar-brand font-weight-light ml-2">EatryHub</span>
+            </a>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- ユーザパネル -->
+                <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                    <div class="image">
+                        <box-icon name='user-circle' type='solid' color='rgba(255,255,255,0.98)' ></box-icon>
+                    </div>
+                    <div class="info">
+                        <a href="#" class="d-block">{{ user.username }}</a>
+                    </div>
+                </div>
+
+                <!-- Search フォーム -->
+                <div class="form-inline">
+                    <div class="input-group" data-widget="sidebar-search">
+                        <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
+                        <div class="input-group-append">
+                            <button class="btn btn-sidebar">
+                                <i class="fas fa-search fa-fw"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Left Sidebar Menu -->
+                <nav class="mt-2">
+                    <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                        <li class="nav-item">
+                            <a href="{% url 'EatryHub:home' %}" class="nav-link">
+                                <i class="bi bi-house-door"></i>
+                                <p>
+                                    ホーム
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="bi bi-graph-down"></i>
+                                <p>
+                                    ダッシュボード
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'TimeManagement:table_view' %}" target="_blank" class="nav-link">
+                                <i class="bi bi-clock-history"></i>
+                                <p>
+                                    時間管理システム
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="bi bi-person-workspace"></i>
+                                <p>
+                                    空席時刻モニタ
+                                    <span class="right badge badge-danger">New</span>
+                                </p>
+                            </a>
+                        </li>
+                        <li class="nav-item menu">
+                            <a href="" class="nav-link">
+                                <i class="bi bi-person-fill-dash"></i>
+                                <p>
+                                    座席在庫管理
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview">
+    
+                                <li class="nav-item">
+                                    <a href="https://connect.airregi.jp/login?client_id=RBD&redirect_uri=https%3A%2F%2Fconnect.airregi.jp%2Foauth%2Fauthorize%3Fclient_id%3DRBD%26redirect_uri%3Dhttps%253A%252F%252Frestaurant-board.com%252FCLP%252Fview%252FcallbackForPlfLogin%252Fauth%26response_type%3Dcode%26scope%3Dread_write%26state%3D713c882ede3779cce3a027d478e1d2c2" target="_blank" class="nav-link">
+                                        <i class="bi bi-file-image"></i>
+                                        <p>レストランボード</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="https://owner.tabelog.com/owner_account/login" target="_blank" class="nav-link">
+                                        <i class="bi bi-file-image"></i>
+                                        <p>食べログ 店舗管理</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="https://manage.gnavi.co.jp/Pro/auth_direct/?gR=https%3A%2F%2Fmanage.gnavi.co.jp%2Fs_kanjisan%2Flist%2Findex.php" target="_blank" class="nav-link">
+                                        <i class="bi bi-file-image"></i>
+                                        <p>ぐるなび 予約管理</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <div class="content-header">
+                <div class="container-fluid">
+                    <div class="row mb-2">
+                        <div class="col-sm-6">
+                            <h1 class="m-0">EatryHub</h1>
+                            <p>ようこそ。{{user.username}}さん</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <button type="button" class="btn btn-secondary float-sm-right">csv保存</button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content -->
+            <div class="content">
+            <div class="container-fluid">
+                <!-- ガントチャート部カード -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card h-100" style="min-height: 1000px;">
+                            <div class="card-header">
+                                <h3 class="card-title">テーブル時間使用状況</h3>
+                                <br>
+                                <p>店舗名: {{ user.store.name }}</p>
+                            </div>
+                            <!-- ガントチャート描画用コンテナ -->
+                            <div class="card-body p-0" style="height: 500px;">
+                                <div id="gantt_here" style="width:100%; height:100%;"></div>
+                            </div>
+                            <!-- dhtmlxGantt -->
+                            <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
+                            <!-- マーカー拡張 -->
+                            <script src="https://cdn.dhtmlx.com/gantt/edge/ext/dhtmlxgantt_marker.js"></script>
+                            <script>
+                                // 日付フォーマット
+                                gantt.config.xml_date = "%Y-%m-%d %H:%i";
+                                // 同テーブルは並列して描画
+                                gantt.config.group_tasks = true;
+
+                                // タスク
+                                gantt.templates.task_class = (start,end,task) => {
+                                    if(task.status == 0) return "light_green"; //none
+                                    if(task.status == 1) return "geep_green"; //invoiceChecked
+                                    if(task.status == 2) return "gray"; //paymentChecked
+                                    return "";
+                                };
+
+                                gantt.templates.task_row_class = function(start, end, task){
+                                    return "resource_" + task.resource.replace(/[^a-zA-Z0-9]/g, "");
+                                };
+
+                                gantt.config.scales = [
+                                { unit:"day", step:1, format:"%Y-%m-%d" },
+                                { unit:"hour", step:1, format:"%H:%i" }
+                                ];
+
+                                // 表示範囲(today)
+                                const today = new Date();
+                                gantt.config.start_date = new Date(today.getFullYear(), today.getMonth(), today.getDate(),0,0);
+                                gantt.config.end_date   = new Date(today.getFullYear(), today.getMonth(), today.getDate(),23,59);
+
+                                // カラム
+                                gantt.config.columns = [{ name:"table", label:"テーブル", tree:true, width:30 }];
+                                
+                                const tasks = {{ tasks|safe }};
+                                // 描画
+                                
+                                gantt.plugins({ marker:true });
+                                gantt.init("gantt_here");
+                                gantt.parse(tasks);
+
+                                // 現在時刻マーカー
+                                gantt.addMarker({
+                                start_date: new Date(),
+                                css: "today_marker",
+                                title: "現在時刻: "+new Date().toLocaleTimeString()
+                                });
+                                console.log("受け渡されたデータフレーム")
+                                console.log(tasks);
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <!-- To the right -->
+            <div class="float-right d-none d-sm-inline">
+                Anything you want
+            </div>
+            <!-- Default to the left -->
+            <strong><a href="{% url 'EatryHub:index' %}" target="_blank" >EatryHub</a></strong>
+        </footer>
+    </div>
+
+    <!-- REQUIRED SCRIPTS -->
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/.test(settings.type) && !this.crossDomain) {
+                    xhr.setRequestHeader("X-CSRFToken", csrfToken);
+                }
+            }
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js" integrity="sha512-AJUWwfMxFuQLv1iPZOTZX0N/jTCIrLxyZjTRKQostNU71MzZTEPHjajSK20Kj1TwJELpP7gl+ShXw5brpnKwEg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    </body>
+</html>

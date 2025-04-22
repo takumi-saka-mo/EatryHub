@@ -1,0 +1,49 @@
+/* table.css */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 4px;
+    text-align: center;
+    height: 20px;
+    overflow: hidden;
+    white-space: nowrap; /* 改行防止 */
+}
+
+/* 1列目の幅 */
+th:nth-child(2), td:nth-child(2) {
+    width: 10ch;
+}
+
+/* 6列目・7列目 */
+th:nth-child(7), td:nth-child(7), 
+th:nth-child(8), td:nth-child(8) {
+    width: 18ch;
+}
+
+/* 偶数行の背景色 */
+tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* 編集可能セル */
+td.editable {
+    cursor: pointer;
+}
+td.editable:focus {
+    outline: 2px solid #007bff;
+}
+
+/* 伝票チェックボックスがオンのときの色 */
+.invoice-checked {
+    background-color: #ffc0cb !important;
+}
+
+/* 会計チェックボックスがオンのときの色 */
+.payment-checked {
+    background-color: #a9a9a9 !important;
+    color: black !important;
+}

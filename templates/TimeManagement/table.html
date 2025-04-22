@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}TimeManagement - Eatry Hub{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <header class="fixed-header">
+      <nav class="navbar navbar-custom mb-0">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">EatryHub - 時間管理システム</a>
+        </div>
+      </nav>
+      <p class="mt-2 mb-1">時間管理システム</p>
+      <p>店舗名: {{ user.store.name }}</p>
+      <form method="get" action="{% url 'TimeManagement:table_view' %}" class="mb-2">
+        <label for="selected_date">表示日付:</label>
+        <input type="date" id="selected_date" name="selected_date" value="{{ selected_date }}">
+        <button type="submit">表示</button>
+      </form>
+    </header>
+
+{% load get_item %}
+{% load custom_filters %}
+
+
+
+</div>
+
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Global (URL & CSRFトークン) -->
+<script>
+    var updateUrl = "{% url 'TimeManagement:update_cell' %}";
+    var csrfToken = "{{ csrf_token }}";
+</script>
+
+<!-- css -->
+<link rel="stylesheet" href="{% static 'TimeManagement/table.css' %}">
+<div class="table-container">
+    <table class="mt-4">
+        <thead>
+            <tr>
+                <th></th>
+                <th>プラン名</th>
+                <th>卓番</th>
+                <th>人数</th>
+                <th>開始時間</th>
+                <th>終了時間</th>
+                <th>滞在時間</th>
+                <th>延長回数(合計)</th>
+                <th>water</th>
+                <th>補充回数</th>
+                <th>退店時間</th>
+                <th>L.O.</th>
+                <th>レバー</th>
+                <th>伝票</th>
+                <th>会計</th>
+                <th>ステータス</th>
+                <th>備考</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+                {% with record=record_dict|get_item:row %}
+                <tr data-row-id="{{ row }}">
+                    <td>{{ row }}</td>
+                    {% for col in cols %}
+                        {% if col == 1 %}
+                            <!-- プラン名 -->
+                            <td data-row="{{ row }}" data-col="1">
+                                <select class="plan-select" data-row="{{ row }}" data-col="1">
+                                    <option value=""></option>
+                                    <option value="レモン" {% if record and record.plan_name == "レモン" %}selected{% endif %}>レモン</option>
+                                    <option value="食べ飲み90m" {% if record and record.plan_name == "食べ飲み90m" %}selected{% endif %}>食べ飲み90m</option>
+                                    <option value="食べ飲み120m" {% if record and record.plan_name == "食べ飲み120m" %}selected{% endif %}>食べ飲み120m</option>
+                                    <option value="スーパー" {% if record and record.plan_name == "スーパー" %}selected{% endif %}>スーパー</option>
+                                    <option value="単品" {% if record and record.plan_name == "単品" %}selected{% endif %}>単品</option>
+                                </select>
+                            </td>
+                        {% elif col == 2 %}
+                            <td data-row="{{ row }}" data-col="2" class="editable" contenteditable="true">
+                                {% if record %}{{ record.table_number }}{% endif %}
+                            </td>
+                        {% elif col == 3 %}
+                            <td data-row="{{ row }}" data-col="3" class="editable" contenteditable="true">
+                                {% if record %}{{ record.people_count|default:"" }}{% endif %}
+                            </td>
+                        {% elif col == 4 %}
+                            <td data-row="{{ row }}" data-col="4" class="editable" contenteditable="true">
+                                {% if record %}{{ record.start_time }}{% endif %}
+                            </td>
+                        {% elif col == 5 %}
+                            <td data-row="{{ row }}" data-col="5" class="editable" contenteditable="true">
+                                {% if record %}{{ record.end_time }}{% endif %}
+                            </td>
+                        {% elif col == 6 %}
+                            <td data-row="{{ row }}" data-col="6" class="read-only" tabindex="-1">
+                                {% if record %}{{ record.calculated_col6 }}{% endif %}
+                            </td>
+                        {% elif col == 7 %}
+                            <td data-row="{{ row }}" data-col="7" class="read-only" tabindex="-1">
+                                {% if record %}{{ record.calculated_col7 }}{% endif %}
+                            </td>
+                        {% elif col == 8 %}
+                            <td data-row="{{ row }}" data-col="8" class="read-only" tabindex="-1">
+                                {% if record %}{{ record.calculated_water_time }}{% endif %}
+                            </td>
+                        {% elif col == 9 %}
+                            <td data-row="{{ row }}" data-col="9" class="editable" tabindex="-1">
+                                <button type="button" class="btn btn-secondary override-btn" 
+                                        data-row="{{ row }}" data-col="9" 
+                                        data-level="{% if record %}{{ record.water_override }}{% else %}0{% endif %}">
+                                    water: {% if record %}{{ record.water_override }}{% else %}0{% endif %}
+                                </button>
+                            </td>
+                        {% elif col == 10 %}
+                            <td data-row="{{ row }}" data-col="10" class="read-only" tabindex="-1">
+                                {% if record %}{{ record.out_time }}{% endif %}
+                            </td>
+                        {% elif col == 11 %}
+                            <td data-row="{{ row }}" data-col="11" class="editable" tabindex="-1">
+                                <input type="checkbox" data-row="{{ row }}" data-col="11" value="true" {% if record and record.col11 %}checked{% endif %}>
+                            </td>
+                        {% elif col == 12 %}
+                            <td data-row="{{ row }}" data-col="12" class="editable" tabindex="-1">
+                                <input type="checkbox" data-row="{{ row }}" data-col="12" value="true" {% if record and record.col12 %}checked{% endif %}>
+                            </td>
+                        {% elif col == 13 %}
+                            <td data-row="{{ row }}" data-col="13" class="editable" tabindex="-1">
+                                <input type="checkbox" data-row="{{ row }}" data-col="13" value="true" {% if record and record.invoiceChecked %}checked{% endif %}>
+                            </td>
+                        {% elif col == 14 %}
+                            <td data-row="{{ row }}" data-col="14" class="editable" tabindex="-1">
+                                <input type="checkbox" data-row="{{ row }}" data-col="14" value="true" {% if record and record.paymentChecked %}checked{% endif %}>
+                            </td>
+                        {% elif col == 15 %}
+                            <td data-row="{{ row }}" data-col="15" class="read-only" tabindex="-1">
+                                <button type="button" class="status-button" data-row="{{ row }}" data-col="15" data-level="0">
+                                    {% if record %}{{ record.status }}{% endif %}
+                                </button>
+                            </td>
+                        {% elif col == 16 %}
+                            <td data-row="{{ row }}" data-col="16" class="editable" contenteditable="true" tabindex="0">
+                                {% if record %}{{ record.memo }}{% endif %}
+                            </td>
+                        {% else %}
+                            <td data-row="{{ row }}" data-col="{{ col }}" class="read-only" tabindex="-1"></td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endwith %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function(){
+        console.log("Using updateUrl:", updateUrl);
+
+        // 初期スタイル更新
+        $('tr[data-row-id]').each(function(){
+            var row = $(this).data('row-id');
+            updateRowCombined(row);
+        });
+        updatePlanColors();
+
+        // プラン名プルダウン部分の背景色再設定
+        function updatePlanColors(){
+            $('select.plan-select').each(function(){
+            var plan = $(this).val();
+            var color = '';
+            if(plan === "レモン"){ color = '#f0e68c'; }
+            else if(plan === "食べ飲み90m"){ color = '#90ee90'; }
+            else if(plan === "食べ飲み120m"){ color = '#32cd32'; }
+            else if(plan === "スーパー"){ color = '#87cefa'; }
+            else if(plan === "単品"){ color = '#696969'; }
+            $(this).css('background-color', color);
+            });
+        }
+
+        // Ajax更新
+        function sendAjaxUpdate(row, col, value){
+            if(!row || !col){
+            console.error("AJAX Error: row or col is missing", row, col);
+            return;
+            }
+            const plan_name = $(`td[data-row="${row}"][data-col="1"] select`).val();
+            const people_count = $(`td[data-row="${row}"][data-col="3"]`).text().trim();
+            const start_time = $(`td[data-row="${row}"][data-col="4"]`).text().trim();
+            const end_time = $(`td[data-row="${row}"][data-col="5"]`).text().trim();
+            const overrideBtn = $(`td[data-row="${row}"][data-col="9"] button.override-btn`);
+            const water_override = overrideBtn.length ? overrideBtn.attr("data-level") : "0";
+
+            console.log(`AJAX sent: row=${row}, col=${col}, value=${value}, water_override=${water_override}`);
+
+            const selected_date = $("#selected_date").val();  // 日付フォームの入力値
+            $.ajax({
+            url: updateUrl,
+            method: "POST",
+            headers: { "X-CSRFToken": csrfToken },
+            data: {
+                'csrfmiddlewaretoken': csrfToken,
+                'row_id': row,
+                'col_number': col,
+                'value': value,
+                'plan_name': plan_name,
+                'people_count': people_count,
+                'start_time': start_time,
+                'end_time': end_time,
+                'water_override': water_override,
+                'selected_date': selected_date // 日付の値も更新
+
+            },
+            success: function(response){
+                if(response.success){
+                // プラン名の場合は<select>の値のみ更新
+                if(response.updated_cells["1"] !== undefined){
+                    const $select = $(`td[data-row="${row}"][data-col="1"] select`);
+                    $select.val(response.updated_cells["1"]);
+                }
+                for(const [colNumber, colValue] of Object.entries(response.updated_cells)){
+                    if(colNumber !== "1"){
+                    $(`td[data-row="${row}"][data-col="${colNumber}"]`).text(colValue);
+                    }
+                }
+                updateRowCombined(row);
+                updatePlanColors();
+                } else {
+                alert("セルのアップデートに失敗しました.");
+                }
+            },
+            error: function(xhr, status, error){
+                console.error("AJAX error:", error, xhr.responseText);
+                alert("Ajax(非同期通信処理)に失敗しました.");
+            }
+            });
+        }
+
+        // チェックボックスは, まとめて更新
+        function sendAjaxUpdateCheckboxes(row, checkboxes){
+            const selected_date = $("#selected_date").val();  // 例: "2025-02-25"
+            const plan_name = $(`td[data-row="${row}"][data-col="1"] select`).val();
+            const people_count = $(`td[data-row="${row}"][data-col="3"]`).text().trim();
+            const start_time = $(`td[data-row="${row}"][data-col="4"]`).text().trim();
+            const end_time = $(`td[data-row="${row}"][data-col="5"]`).text().trim();
+            const overrideBtn = $(`td[data-row="${row}"][data-col="9"] button.override-btn`);
+            const water_override = overrideBtn.length ? overrideBtn.attr("data-level") : "0";
+            
+
+            $.ajax({
+            url: updateUrl,
+            method: "POST",
+            headers: { "X-CSRFToken": csrfToken },
+            data: {
+                'csrfmiddlewaretoken': csrfToken,
+                'row_id': row,
+                'col_number': 'checkboxes',
+                'plan_name': plan_name,
+                'people_count': people_count,
+                'start_time': start_time,
+                'end_time': end_time,
+                'water_override': water_override, 
+                'col11': checkboxes.col11,
+                'col12': checkboxes.col12,
+                'col13': checkboxes.col13,
+                'col14': checkboxes.col14,
+                'selected_date': selected_date
+            },
+            success: function(response){
+                if(response.success){
+                for(const [colNumber, colValue] of Object.entries(response.updated_cells)){
+                    $(`td[data-row="${row}"][data-col="${colNumber}"]`).text(colValue);
+                }
+                updateRowCombined(row);
+                } else {
+                alert("チェックボックスの更新に失敗しました.");
+                }
+            },
+            error: function(xhr, status, error){
+                console.error("AJAX error:", error, xhr.responseText);
+                alert("Ajax(非同期通信処理)に失敗しました.");
+            }
+            });
+        }
+
+        // 以下の updateRowStyle, updateLOOUTTimeColors, updateWaterColor, updateSeatColor, updateStatus はそのまま
+
+        function updateRowStyle(row){
+            var loChecked = $(`td[data-row="${row}"][data-col="11"] input[type="checkbox"]`).prop("checked");
+            if(loChecked){
+            $(`td[data-row="${row}"][data-col="6"]`).css("text-decoration", "line-through");
+            } else {
+            $(`td[data-row="${row}"][data-col="6"]`).css("text-decoration", "none");
+            }
+            var invoiceChecked = $(`td[data-row="${row}"][data-col="13"] input[type="checkbox"]`).prop("checked");
+            var paymentChecked = $(`td[data-row="${row}"][data-col="14"] input[type="checkbox"]`).prop("checked");
+            for(let i=1;i<=16;i++){
+            if(invoiceChecked && paymentChecked){
+                $(`td[data-row="${row}"][data-col="${i}"]`).css({"background-color": "#a9a9a9", "color": ""});
+            } else if(invoiceChecked){
+                $(`td[data-row="${row}"][data-col="${i}"]`).css({"background-color": "#ffc0cb", "color": "black"});
+            } else if(paymentChecked){
+                $(`td[data-row="${row}"][data-col="${i}"]`).css({"background-color": "#a9a9a9", "color": "black"});
+            } else {
+                $(`td[data-row="${row}"][data-col="${i}"]`).css({"background-color": "", "color": ""});
+            }
+            }
+        }
+        function updateLOOUTTimeColors(row){
+            var invoiceChecked = $(`td[data-row="${row}"][data-col="13"] input[type="checkbox"]`).prop("checked");
+            var paymentChecked = $(`td[data-row="${row}"][data-col="14"] input[type="checkbox"]`).prop("checked");
+            if(paymentChecked){ return; }
+            $(`td[data-row="${row}"][data-col="6"], td[data-row="${row}"][data-col="7"]`).each(function(){
+            var col = $(this).attr("data-col");
+            var cellText = $(this).text().trim();
+            var match = cellText.match(/【(ラスト|アウト)】(\d{2}):(\d{2})/);
+            if(match){
+                var label = match[1];
+                var cellHour = parseInt(match[2],10);
+                var cellMinute = parseInt(match[3],10);
+                var now = new Date();
+                var nowHour = now.getHours();
+                var nowMinute = now.getMinutes();
+                if(nowHour > cellHour || (nowHour===cellHour && nowMinute>=cellMinute)){
+                if(invoiceChecked){
+                    if(!(col==="6" && label==="ラスト")){
+                    $(this).css("background-color", "red");
+                    }
+                } else {
+                    $(this).css("background-color", "red");
+                }
+                } else {
+                $(this).css("background-color", invoiceChecked ? "#ffc0cb" : "");
+                }
+            }
+            });
+        }
+        function updateWaterColor(row){
+            var invoiceChecked = $(`td[data-row="${row}"][data-col="13"] input[type="checkbox"]`).prop("checked");
+            var paymentChecked = $(`td[data-row="${row}"][data-col="14"] input[type="checkbox"]`).prop("checked");
+            if(paymentChecked){ return; }
+            var waterText = $(`td[data-row="${row}"][data-col="8"]`).text().trim();
+            if(!waterText) return;
+            var parts = waterText.split(":");
+            if(parts.length<2)return;
+            var waterHour = parseInt(parts[0],10);
+            var waterMinute = parseInt(parts[1],10);
+            var now = new Date();
+            var nowHour = now.getHours();
+            var nowMinute = now.getMinutes();
+            if(nowHour>waterHour || (nowHour===waterHour && nowMinute>=waterMinute)){
+            $(`td[data-row="${row}"][data-col="8"]`).css("background-color", "red");
+            } else {
+            $(`td[data-row="${row}"][data-col="8"]`).css("background-color", invoiceChecked ? "#ffc0cb" : "");
+            }
+        }
+        function updateSeatColor(row){
+            var invoiceChecked = $(`td[data-row="${row}"][data-col="13"] input[type="checkbox"]`).prop("checked");
+            var paymentChecked = $(`td[data-row="${row}"][data-col="14"] input[type="checkbox"]`).prop("checked");
+            if(paymentChecked){ return; }
+            var seat_limit = $(`td[data-row="${row}"][data-col="10"]`).text().trim();
+            if(!seat_limit)return;
+            var parts = seat_limit.split(":");
+            if(parts.length<2)return;
+            var seatHour = parseInt(parts[0],10);
+            var seatMinute = parseInt(parts[1],10);
+            var now = new Date();
+            var nowHour = now.getHours();
+            var nowMinute = now.getMinutes();
+            if(nowHour>seatHour || (nowHour===seatHour && nowMinute>=seatMinute)){
+            $(`td[data-row="${row}"][data-col="10"]`).css("background-color", "red");
+            } else {
+            $(`td[data-row="${row}"][data-col="10"]`).css("background-color", invoiceChecked ? "#ffc0cb" : "");
+            }
+        }
+        function updateStatus(row){
+            var statusButton = $(`td[data-row="${row}"][data-col="15"] button.status-button`);
+            var startTime = $(`td[data-row="${row}"][data-col="4"]`).text().trim();
+            var invoiceChecked = $(`td[data-row="${row}"][data-col="13"] input[type="checkbox"]`).prop("checked");
+            var paymentChecked = $(`td[data-row="${row}"][data-col="14"] input[type="checkbox"]`).prop("checked");
+            if(paymentChecked){
+            statusButton.text("会計済み").css({"background-color": "#a9a9a9", "border-color": "#a9a9a9"});
+            } else if(invoiceChecked){
+            statusButton.text("お食事済み").css({"background-color": "#3cb371", "border-color": "#3cb371"});
+            } else if(startTime !== ""){
+            statusButton.text("ご来店").css({"background-color": "lightgreen", "border-color": "lightgreen"});
+            } else {
+            statusButton.text("").css({"background-color": "transparent", "border-color": "transparent"});
+            }
+        }
+        function updateRowCombined(row){
+            updateRowStyle(row);
+            updateLOOUTTimeColors(row);
+            updateWaterColor(row);
+            updateSeatColor(row);
+            updateStatus(row);
+        }
+
+        // 各イベント設定
+        $(document)
+            .on("change", ".plan-select", function(){
+            var plan = $(this).val();
+            if(plan==="レモン"){ $(this).css('background-color','#f0e68c'); }
+            else if(plan==="食べ飲み90m"){ $(this).css('background-color','#90ee90'); }
+            else if(plan==="食べ飲み120m"){ $(this).css('background-color','#32cd32'); }
+            else if(plan==="スーパー"){ $(this).css('background-color','#87cefa'); }
+            else if(plan==="単品"){ $(this).css('background-color','#696969'); }
+            else { $(this).css('background-color',''); }
+            const row = $(this).closest('td').data('row');
+            const col = $(this).closest('td').data('col');
+            const value = plan;
+            sendAjaxUpdate(row, col, value);
+            })
+            .on("change", 'td input[type="checkbox"]', function(){
+            const row = $(this).closest("tr").data("row-id");
+            const checkboxes = {
+                col11: $('td[data-row="'+row+'"][data-col="11"] input[type="checkbox"]').prop("checked") ? "true" : "false",
+                col12: $('td[data-row="'+row+'"][data-col="12"] input[type="checkbox"]').prop("checked") ? "true" : "false",
+                col13: $('td[data-row="'+row+'"][data-col="13"] input[type="checkbox"]').prop("checked") ? "true" : "false",
+                col14: $('td[data-row="'+row+'"][data-col="14"] input[type="checkbox"]').prop("checked") ? "true" : "false"
+            };
+            sendAjaxUpdateCheckboxes(row, checkboxes);
+            })
+            .on('blur', 'td.editable', function(){
+            const row = $(this).data('row');
+            const col = $(this).data('col');
+            const value = $(this).text().trim();
+            sendAjaxUpdate(row, col, value);
+            })
+            .on('keydown', 'td.editable', function(e){
+            const col = $(this).data('col');
+            const row = $(this).data('row');
+            if(e.key==="Escape"){ $(this).blur(); }
+            else if(e.key==="Enter"){
+                e.preventDefault();
+                const nextCell = $(`td[data-row="${row}"][data-col="${col+1}"]`);
+                if(nextCell.length && nextCell.hasClass('editable')){
+                nextCell.focus();
+                }
+            }
+            })
+            .on("click", ".override-btn", function(e){
+            let currentLevel = parseInt($(this).attr("data-level"));
+            let newLevel = (currentLevel+1)%3;
+            $(this).attr("data-level", newLevel);
+            $(this).text("water: " + newLevel);
+            const row = $(this).attr("data-row");
+            const col = $(this).attr("data-col");
+            sendAjaxUpdate(row, col, newLevel.toString());
+            });
+
+        $(document).on("change", ".plan-select", function(){
+            var selectedValue = $(this).val();
+            $(this).attr("data-selected", selectedValue);
+        });
+
+        // 初期更新・定期更新(10sごと)
+        $('tr[data-row-id]').each(function(){
+            var row = $(this).data('row-id');
+            updateRowCombined(row);
+        });
+        updatePlanColors();
+        setInterval(function(){
+            $('tr[data-row-id]').each(function(){
+            var row = $(this).data('row-id');
+            updateRowCombined(row);
+            });
+        }, 10000);
+    });
+</script>
+</body>
+</html>

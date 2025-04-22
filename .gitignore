@@ -1,0 +1,28 @@
+# Pythonキャッシュ
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 仮想環境
+.env
+env/
+
+# SQLiteデータベース
+db.sqlite3
+
+# Django  で生成された静的ファイル
+staticfiles/admin
+
+# ログファイル
+*.log
+
+# .env ファイル（環境変数ファイル）
+.env
+.env.*
+
+# エディタ・IDE固有ファイル
+.vscode/
+.VSCodeCounter
+
+# OS固有ファイル
+.DS_Store

@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Eatry Hub{% endblock %}
+
+{% block content %}
+<h1>テーブルステータス</h1>
+<table border="1">
+    <thead>
+        <tr>
+            <th>テーブル名</th>
+            <th>ステータス</th>
+            <th>更新日時</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for table in tables %}
+        <tr>
+            <td>{{ table.name }}</td>
+            <td>{{ table.get_status_display }}</td>
+            <td>{{ table.updated_at }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

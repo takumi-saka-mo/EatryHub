@@ -1,0 +1,146 @@
+.navbar-custom {
+    background-color: #343a40 !important;
+    min-height: 80px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-family: "Sora", sans-serif;
+}
+
+.table-container {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background-color: #ffffff;
+  z-index: 10;
+}
+
+.navbar-custom .navbar-brand,
+.navbar-custom .navbar-brand:hover,
+.navbar-custom .navbar-brand:focus {
+    color: #ffffff !important;
+}
+
+.navbar-brand {
+    font-size: 30px !important;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td[data-col="1"],
+td[data-col="5"],
+td[data-col="10"],
+td[data-col="16"] {
+    border-right: 1.5px solid black;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 4px;
+    text-align: center;
+    height: 20px;
+    overflow: hidden;
+    white-space: nowrap; /* 改行防止 */
+}
+
+/* 1列目の幅 */
+th:nth-child(2), td:nth-child(2) {
+        width: 10ch;
+    }
+
+/* 6列目・7列目（滞在時間・延長回数） */
+th:nth-child(7), td:nth-child(7), 
+th:nth-child(8), td:nth-child(8) {
+    width: 20ch!important; /* 12文字分の幅 */
+}
+
+/* 18列目（備考） */
+th:nth-child(17), td:nth-child(17) {
+    width: 30ch!important; /* 25文字分の幅 */
+}
+
+/* 他列は自動調整 */
+th, td {
+    width: auto;
+}
+
+/* 偶数行の背景色 */
+tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* 編集可能 */
+td.editable {
+    cursor: pointer;
+}
+td.editable:focus {
+    outline: 2px solid #007bff;
+}
+
+/* 編集不可 */
+td.read-only {
+    cursor: not-allowed;
+}
+/* 各プランの背景色を変更 */
+.plan-select {
+    background-color: lightgray; /* デフォルトの背景色 */
+    border-radius: 15px;
+    padding: 1px;
+    border: 2px solid #ccc;
+    font-size: 12px;
+}
+
+/* 選択時のスタイル */
+.plan-select:focus {
+    background-color: white;
+}
+
+/* プルダウンの背景色を変更 */
+.plan-select[data-selected="レモン"] {
+    background-color: #f0e68c;
+    color: black;
+}
+
+.plan-select[data-selected="食べ飲み90m"] {
+    background-color: #90ee90;
+}
+
+.plan-select[data-selected="食べ飲み120m"] {
+    background-color: #32cd32;
+}
+
+.plan-select[data-selected="スーパー"] {
+    background-color: #87cefa;
+}
+
+.plan-select[data-selected="単品"] {
+    background-color: #696969;
+    color: white;
+}
+
+.override-btn {
+    background-color: #a9a9a9; /* デフォルトの背景色 */
+    padding: 2px 10px;       /* 上下5px、左右10pxの余白 */
+    font-size: 12px;
+    border-radius: 4px;      /* 角を少し丸める */
+}
+
+.status-button {
+    opacity: 1;           /* 不透明度を元に戻す */
+    pointer-events: none; /* クリック無効 */
+    padding: 2px 2px; 
+    font-size: 12px;
+    border-radius: 20px;
+    /* 必要に応じて色を調整 */
+    border: none; /* 必要に応じて */
+    background-color: transparent;
+
+
+}
+
