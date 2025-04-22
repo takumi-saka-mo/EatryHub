@@ -5,3 +5,4 @@ psycopg2-binary==2.9.6
 dj-database-url
 gunicorn
 whitenoise
+dj_database_url
