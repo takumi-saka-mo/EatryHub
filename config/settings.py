@@ -147,7 +147,7 @@ USE_TZ = True
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-WHITENOISE_MAX_AGE = 31536000  # 1年（秒）
+WHITENOISE_MAX_AGE = 31536000
 
 STATIC_URL = '/static/'
 
