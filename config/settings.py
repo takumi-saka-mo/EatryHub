@@ -84,19 +84,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
+import dj_database_url
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'eatryhub_db',
-        'USER': 'eatryhub_user',
-        'PASSWORD': 'your_db_password',
-        'HOST': 'db',
-        'PORT': '5432',
-        'OPTIONS': {
-            'options': '-c search_path=public'
-        }
-    }
+    'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
 }
 
 # Password validation
