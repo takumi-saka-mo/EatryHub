@@ -29,7 +29,6 @@ SECRET_KEY = config('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -116,7 +115,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # 開発サーバー用
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv())
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8000']
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'https://eatryhub-b060cdd5c6f0.herokuapp.com/']
 CSRF_COOKIE_SECURE = False
 
 # settings.py
