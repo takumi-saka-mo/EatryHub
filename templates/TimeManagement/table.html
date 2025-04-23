@@ -89,35 +89,35 @@
                                 </select>
                             </td>
                         {% elif col == 2 %}
-                            <td data-row="{{ row }}" data-col="2" class="editable" contenteditable="true">
+                            <td data-row="{{ row }}" data-col="2" class="editable nav-cell" contenteditable="true" tabindex="0">
                                 {% if record %}{{ record.table_number }}{% endif %}
                             </td>
                         {% elif col == 3 %}
-                            <td data-row="{{ row }}" data-col="3" class="editable" contenteditable="true">
+                            <td data-row="{{ row }}" data-col="3" class="editable nav-cell" contenteditable="true" tabindex="0">
                                 {% if record %}{{ record.people_count|default:"" }}{% endif %}
                             </td>
                         {% elif col == 4 %}
-                            <td data-row="{{ row }}" data-col="4" class="editable" contenteditable="true">
+                            <td data-row="{{ row }}" data-col="4" class="editable nav-cell" contenteditable="true" tabindex="0">
                                 {% if record %}{{ record.start_time }}{% endif %}
                             </td>
                         {% elif col == 5 %}
-                            <td data-row="{{ row }}" data-col="5" class="editable" contenteditable="true">
+                            <td data-row="{{ row }}" data-col="5" class="editable nav-cell" contenteditable="true" tabindex="0">
                                 {% if record %}{{ record.end_time }}{% endif %}
                             </td>
                         {% elif col == 6 %}
-                            <td data-row="{{ row }}" data-col="6" class="read-only" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="6" class="read-only nav-cell" tabindex="0">
                                 {% if record %}{{ record.calculated_col6 }}{% endif %}
                             </td>
                         {% elif col == 7 %}
-                            <td data-row="{{ row }}" data-col="7" class="read-only" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="7" class="read-only nav-cell" tabindex="0">
                                 {% if record %}{{ record.calculated_col7 }}{% endif %}
                             </td>
                         {% elif col == 8 %}
-                            <td data-row="{{ row }}" data-col="8" class="read-only" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="8" class="read-only nav-cell" tabindex="0">
                                 {% if record %}{{ record.calculated_water_time }}{% endif %}
                             </td>
                         {% elif col == 9 %}
-                            <td data-row="{{ row }}" data-col="9" class="editable" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="9" class="editable nav-cell" contenteditable="true" tabindex="0">
                                 <button type="button" class="btn btn-secondary override-btn" 
                                         data-row="{{ row }}" data-col="9" 
                                         data-level="{% if record %}{{ record.water_override }}{% else %}0{% endif %}">
@@ -125,37 +125,37 @@
                                 </button>
                             </td>
                         {% elif col == 10 %}
-                            <td data-row="{{ row }}" data-col="10" class="read-only" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="10" class="read-only nav-cell" tabindex="0">
                                 {% if record %}{{ record.out_time }}{% endif %}
                             </td>
                         {% elif col == 11 %}
-                            <td data-row="{{ row }}" data-col="11" class="editable" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="11" class="editable nav-cell" contenteditable="true" tabindex="0">
                                 <input type="checkbox" data-row="{{ row }}" data-col="11" value="true" {% if record and record.col11 %}checked{% endif %}>
                             </td>
                         {% elif col == 12 %}
-                            <td data-row="{{ row }}" data-col="12" class="editable" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="12" class="editable nav-cell" contenteditable="true" tabindex="0">
                                 <input type="checkbox" data-row="{{ row }}" data-col="12" value="true" {% if record and record.col12 %}checked{% endif %}>
                             </td>
                         {% elif col == 13 %}
-                            <td data-row="{{ row }}" data-col="13" class="editable" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="13" class="editable nav-cell" contenteditable="true" tabindex="0">
                                 <input type="checkbox" data-row="{{ row }}" data-col="13" value="true" {% if record and record.invoiceChecked %}checked{% endif %}>
                             </td>
                         {% elif col == 14 %}
-                            <td data-row="{{ row }}" data-col="14" class="editable" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="14" class="editable nav-cell" contenteditable="true" tabindex="0">
                                 <input type="checkbox" data-row="{{ row }}" data-col="14" value="true" {% if record and record.paymentChecked %}checked{% endif %}>
                             </td>
                         {% elif col == 15 %}
-                            <td data-row="{{ row }}" data-col="15" class="read-only" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="15" class="read-only nav-cell" tabindex="0">
                                 <button type="button" class="status-button" data-row="{{ row }}" data-col="15" data-level="0">
                                     {% if record %}{{ record.status }}{% endif %}
                                 </button>
                             </td>
                         {% elif col == 16 %}
-                            <td data-row="{{ row }}" data-col="16" class="editable" contenteditable="true" tabindex="0">
+                            <td data-row="{{ row }}" data-col="16" class="editable nav-cell" contenteditable="true" tabindex="0">
                                 {% if record %}{{ record.memo }}{% endif %}
                             </td>
                         {% else %}
-                            <td data-row="{{ row }}" data-col="{{ col }}" class="read-only" tabindex="-1"></td>
+                            <td data-row="{{ row }}" data-col="{{ col }}" class="read-onlynav-cell" tabindex="0"></td>
                         {% endif %}
                     {% endfor %}
                 </tr>
@@ -477,6 +477,46 @@
             updateRowCombined(row);
             });
         }, 10000);
+
+        // キーに寄るセル移動機能の追加
+        $(function(){
+            // nav-cellはフォーカス対象
+            const selector = 'td.nav-cell';
+        
+            // フォーカス時に activeCell を保持
+            let $activeCell = null;
+            $(document).on('focus', selector, function(){
+            $activeCell = $(this);
+            });
+        
+            // 矢印キーでセル移動
+            $(document).on('keydown', function(e){
+            if (!$activeCell) return;
+            let row = parseInt($activeCell.attr('data-row'),10);
+            let col = parseInt($activeCell.attr('data-col'),10);
+            let nextRow = row, nextCol = col;
+        
+            switch(e.which){
+                case 37: nextCol = col - 1; break; // ←
+                case 38: nextRow = row - 1; break; // ↑
+                case 39: nextCol = col + 1; break; // →
+                case 40: nextRow = row + 1; break; // ↓
+                default: return;
+            }
+            e.preventDefault();
+        
+            const $next = $(`td.nav-cell[data-row="${nextRow}"][data-col="${nextCol}"]`);
+            if ($next.length) {
+                $next.focus();
+                // 編集セルなら編集モード開始
+                if ($next.hasClass('editable')) {
+                document.execCommand('selectAll', false, null);
+                }
+                // ビュー内に収める
+                $next[0].scrollIntoView({block:'nearest', inline:'nearest'});
+            }
+            });
+        });
     });
 </script>
 </body>
