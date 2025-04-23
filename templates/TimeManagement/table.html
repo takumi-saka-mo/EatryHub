@@ -105,15 +105,15 @@
                                 {% if record %}{{ record.end_time }}{% endif %}
                             </td>
                         {% elif col == 6 %}
-                            <td data-row="{{ row }}" data-col="6" class="read-only nav-cell" tabindex="0">
+                            <td data-row="{{ row }}" data-col="6" class="read-only" tabindex="-1">
                                 {% if record %}{{ record.calculated_col6 }}{% endif %}
                             </td>
                         {% elif col == 7 %}
-                            <td data-row="{{ row }}" data-col="7" class="read-only nav-cell" tabindex="0">
+                            <td data-row="{{ row }}" data-col="7" class="read-only" tabindex="-1">
                                 {% if record %}{{ record.calculated_col7 }}{% endif %}
                             </td>
                         {% elif col == 8 %}
-                            <td data-row="{{ row }}" data-col="8" class="read-only nav-cell" tabindex="0">
+                            <td data-row="{{ row }}" data-col="8" class="read-only" tabindex="-1">
                                 {% if record %}{{ record.calculated_water_time }}{% endif %}
                             </td>
                         {% elif col == 9 %}
@@ -125,23 +125,23 @@
                                 </button>
                             </td>
                         {% elif col == 10 %}
-                            <td data-row="{{ row }}" data-col="10" class="read-only nav-cell" tabindex="0">
+                            <td data-row="{{ row }}" data-col="10" class="read-only" tabindex="-1">
                                 {% if record %}{{ record.out_time }}{% endif %}
                             </td>
                         {% elif col == 11 %}
-                            <td data-row="{{ row }}" data-col="11" class="editable nav-cell" contenteditable="true" tabindex="0">
+                            <td data-row="{{ row }}" data-col="11" class="nav-cell" tabindex="-1">
                                 <input type="checkbox" data-row="{{ row }}" data-col="11" value="true" {% if record and record.col11 %}checked{% endif %}>
                             </td>
                         {% elif col == 12 %}
-                            <td data-row="{{ row }}" data-col="12" class="editable nav-cell" contenteditable="true" tabindex="0">
+                            <td data-row="{{ row }}" data-col="12" class="nav-cell" tabindex="-1">
                                 <input type="checkbox" data-row="{{ row }}" data-col="12" value="true" {% if record and record.col12 %}checked{% endif %}>
                             </td>
                         {% elif col == 13 %}
-                            <td data-row="{{ row }}" data-col="13" class="editable nav-cell" contenteditable="true" tabindex="0">
+                            <td data-row="{{ row }}" data-col="13" class="nav-cell" tabindex="-1">
                                 <input type="checkbox" data-row="{{ row }}" data-col="13" value="true" {% if record and record.invoiceChecked %}checked{% endif %}>
                             </td>
                         {% elif col == 14 %}
-                            <td data-row="{{ row }}" data-col="14" class="editable nav-cell" contenteditable="true" tabindex="0">
+                            <td data-row="{{ row }}" data-col="14" class="nav-cell" tabindex="-1">
                                 <input type="checkbox" data-row="{{ row }}" data-col="14" value="true" {% if record and record.paymentChecked %}checked{% endif %}>
                             </td>
                         {% elif col == 15 %}
