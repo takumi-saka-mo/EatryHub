@@ -60,8 +60,16 @@ def home(request):
         WHERE table_number IS NOT NULL AND store_id = {user_store.id}
     """
     # SQLAlchemyエンジンにてデータを渡す
-    engine = create_engine(settings.DATABASE_URL)
-    df = pd.read_sql_query(query, con=engine)    
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        cols   = [col[0] for col in cursor.description]
+        rows   = cursor.fetchall()
+    try:
+        df = pd.DataFrame(rows, columns=cols)
+    except Exception as e:
+        import logging
+        logging.error(f"DataFrame化に失敗: {e}")
+        df = pd.DataFrame(columns=cols)
     # 日付列を日付型に変換してフィルタ
     df['date'] = pd.to_datetime(df['date']).dt.date
     df = df[df['date'] == selected_date]
