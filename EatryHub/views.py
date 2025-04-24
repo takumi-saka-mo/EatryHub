@@ -59,18 +59,25 @@ def home(request):
         FROM "TimeManagement_timemanagementrecord"
         WHERE table_number IS NOT NULL AND store_id = {user_store.id}
     """
-    
-    records = TimeManagementRecord.objects.filter(
+
+    records = list(TimeManagementRecord.objects.filter(
         store=user_store,
         date=selected_date,
     ).values(
         'id','date','table_number','people_count',
         'plan_name','start_time','end_time','out_time',
         'extensions','invoiceChecked','paymentChecked'
-    )
+    ))
+    # 空でもcolumnsを渡すように
+    cols = [
+      'id','date','table_number','people_count',
+      'plan_name','start_time','end_time','out_time',
+      'extensions','invoiceChecked','paymentChecked'
+    ]
+    
     
     try:
-       df = pd.DataFrame.from_records(records)
+       df = pd.DataFrame.from_records(records, columns=cols)
     except Exception as e:
         import logging
         logging.error(f"DataFrameの生成に失敗しました. : {e}")
