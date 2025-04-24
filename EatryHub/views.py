@@ -59,17 +59,22 @@ def home(request):
         FROM "TimeManagement_timemanagementrecord"
         WHERE table_number IS NOT NULL AND store_id = {user_store.id}
     """
-    # SQLAlchemyエンジンにてデータを渡す
-    with connection.cursor() as cursor:
-        cursor.execute(query)
-        cols   = [col[0] for col in cursor.description]
-        rows   = cursor.fetchall()
+    
+    records = TimeManagementRecord.objects.filter(
+        store=user_store,
+        date=selected_date,
+    ).values(
+        'id','date','table_number','people_count',
+        'plan_name','start_time','end_time','out_time',
+        'extensions','invoiceChecked','paymentChecked'
+    )
+    
     try:
-        df = pd.DataFrame(rows, columns=cols)
+       df = pd.DataFrame.from_records(records)
     except Exception as e:
         import logging
-        logging.error(f"DataFrame化に失敗: {e}")
-        df = pd.DataFrame(columns=cols)
+        logging.error(f"DataFrameの生成に失敗しました. : {e}")
+        df = pd.DataFrame()
     # 日付列を日付型に変換してフィルタ
     df['date'] = pd.to_datetime(df['date']).dt.date
     df = df[df['date'] == selected_date]
