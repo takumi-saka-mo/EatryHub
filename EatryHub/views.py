@@ -78,6 +78,9 @@ def home(request):
     
     try:
        df = pd.DataFrame.from_records(records, columns=cols)
+       if df.empty:
+        tasks = {"data": [], "links": []}
+        return render(request, 'EatryHub/home.html', {'tasks': json.dumps(tasks)})
     except Exception as e:
         import logging
         logging.error(f"DataFrameの生成に失敗しました. : {e}")
