@@ -6,3 +6,4 @@ dj-database-url
 gunicorn
 whitenoise
 dj_database_url
+sqlalchemy
