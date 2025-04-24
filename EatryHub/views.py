@@ -2,6 +2,7 @@ import sqlite3
 import pandas as pd
 import json
 from datetime import datetime as dt
+from sqlalchemy import create_engine
 from TimeManagement.models import TimeManagementRecord
 
 from django.conf import settings
@@ -37,7 +38,6 @@ def index(request):
 @login_required
 def home(request):
     user_store = request.user.store  # ユーザーの所属店舗
-    ser_store = request.user.store  # ユーザーの所属店舗
     if user_store is None:
         # 店舗情報が未設定の場合、エラーメッセージを表示するか、デフォルトの店舗に切り替える処理を追加
         return render(request, 'EatryHub/error.html', {
@@ -59,8 +59,9 @@ def home(request):
         FROM "TimeManagement_timemanagementrecord"
         WHERE table_number IS NOT NULL AND store_id = {user_store.id}
     """
-    df = pd.read_sql_query(query, connection)
-    
+    # SQLAlchemyエンジンにてデータを渡す
+    engine = create_engine(settings.DATABASE_URL)
+    df = pd.read_sql_query(query, con=engine)    
     # 日付列を日付型に変換してフィルタ
     df['date'] = pd.to_datetime(df['date']).dt.date
     df = df[df['date'] == selected_date]
