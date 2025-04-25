@@ -46,3 +46,17 @@ class TableUsage(models.Model):
     start_time   = models.DateTimeField()
     end_time     = models.DateTimeField()
     progress     = models.FloatField(default=0.0)
+
+
+# home表示チャートのデータを再構成
+
+class TableStructure(models.Model):
+    store = models.ForeignKey(Store, on_delete=models.CASCADE)  # 店舗ごと
+    table_number = models.IntegerField()
+    capacity = models.IntegerField(default=4)  # 座席の定員（必要なら）
+
+    class Meta:
+        unique_together = ('store', 'table_number')  # 同じ店舗内でテーブル番号は一意
+
+    def __str__(self):
+        return f"{self.store.name} - {self.table_number}卓"
