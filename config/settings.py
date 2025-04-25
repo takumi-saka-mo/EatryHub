@@ -123,7 +123,7 @@ CSRF_TRUSTED_ORIGINS = ['http://localhost:8000',
 
                         'https://eatryhub-b060cdd5c6f0.herokuapp.com/',
                         'https://eatryhub-b060cdd5c6f0.herokuapp.com',
-                        'https://eatryhub.com'
+                        'https://www.eatryhub.com'
                         ]
 
 CSRF_COOKIE_SECURE = False
