@@ -75,12 +75,11 @@ def home(request):
       'extensions','invoiceChecked','paymentChecked'
     ]
     
-    
-    try:
-       df = pd.DataFrame.from_records(records, columns=cols)
-       if df.empty:
+    if not records:
         tasks = {"data": [], "links": []}
         return render(request, 'EatryHub/home.html', {'tasks': json.dumps(tasks)})
+    try:
+       df = pd.DataFrame.from_records(records, columns=cols)
     except Exception as e:
         import logging
         logging.error(f"DataFrameの生成に失敗しました. : {e}")
