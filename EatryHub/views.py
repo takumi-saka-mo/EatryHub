@@ -76,8 +76,11 @@ def home(request):
     ]
     
     if not records:
-        tasks = {"data": [], "links": []}
-        return render(request, 'EatryHub/home.html', {'tasks': json.dumps(tasks)})
+        return render(request, 'EatryHub/home.html', {
+        'tasks': json.dumps({"data": [], "links": []}),
+        'message': '本日の記録がまだ登録されていません。'
+        })
+    
     try:
        df = pd.DataFrame.from_records(records, columns=cols)
     except Exception as e:
