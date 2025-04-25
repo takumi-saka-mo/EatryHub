@@ -2,7 +2,7 @@ import sqlite3
 import pandas as pd
 import json
 from datetime import datetime as dt
-from sqlalchemy import create_engine
+# from sqlalchemy import create_engine
 from TimeManagement.models import TimeManagementRecord
 from EatryHub.models import TableStructure
 
@@ -53,10 +53,6 @@ def home(request):
 
     print("Selected date:", selected_date)
 
-    # 店舗の座席一覧を取得
-    tables = TableStructure.objects.filter(store=user_store)
-
-    # 今日のTimeManagementRecord取得
     records = list(TimeManagementRecord.objects.filter(
         store=user_store,
         date=selected_date,
@@ -66,59 +62,79 @@ def home(request):
         'extensions', 'invoiceChecked', 'paymentChecked'
     ))
 
-    # 空でもcolumnsを渡すように
     cols = [
-      'id', 'date', 'table_number', 'people_count',
-      'plan_name', 'start_time', 'end_time', 'out_time',
-      'extensions', 'invoiceChecked', 'paymentChecked'
+        'id', 'date', 'table_number', 'people_count',
+        'plan_name', 'start_time', 'end_time', 'out_time',
+        'extensions', 'invoiceChecked', 'paymentChecked'
     ]
 
-    # レコードを辞書化（table_number基準で）
-    records_dict = {r['table_number']: r for r in records}
+    # DataFrameに変換
+    try:
+        df = pd.DataFrame.from_records(records, columns=cols)
+        if df.empty:
+            tasks = {"data": [], "links": []}
+            return render(request, 'EatryHub/home.html', {'tasks': json.dumps(tasks)})
+    except Exception as e:
+        import logging
+        logging.error(f"DataFrame生成エラー: {e}")
+        df = pd.DataFrame()
 
+    # 日付変換
+    df['date'] = pd.to_datetime(df['date']).dt.date
+    df = df[df['date'] == selected_date]
+
+    # 人数
+    df = df.dropna(subset=['people_count']).copy()
+    df['people_count'] = df['people_count'].astype(int)
+
+    # 時刻列の文字列正規化
+    for col in ['start_time', 'end_time', 'out_time']:
+        df[col] = df[col].astype(str).str.zfill(4).str.replace(r'(\d{2})(\d{2})', r'\1:\2', regex=True)
+
+    # seat_timeカラムを作成
+    df['seat_time'] = None
+
+    # レモンプラン：out_timeが"00:00"なら"23:59"に補正
+    mask_lemon = df['plan_name'] == 'レモン'
+    df.loc[mask_lemon, 'seat_time'] = df.loc[mask_lemon, 'out_time'].apply(
+        lambda t: "23:59" if t == "00:00" else t
+    )
+
+    # その他のプラン："【アウト】"を除いたextensionsを使う
+    mask = df['plan_name'].isin(['食べ飲み90m', '食べ飲み120m', 'スーパー'])
+    df.loc[mask, 'seat_time'] = df.loc[mask, 'extensions'].str.replace('【アウト】', '', regex=False)
+
+    # seat_timeが欠損なら"23:59"補完
+    df['seat_time'] = df['seat_time'].fillna("23:59")
+
+    # 24:00以降を23:59に丸める関数
+    def cap_time(time_str):
+        try:
+            hour, minute = map(int, time_str.split(":"))
+            if hour >= 24:
+                return "23:59"
+            return time_str
+        except Exception:
+            return "23:59"
+    df['seat_time'] = df['seat_time'].apply(cap_time)
+
+    # status計算
+    df['status'] = df['invoiceChecked'].astype(int) + df['paymentChecked'].astype(int)
+
+    # タスク作成
     tasks = {"data": [], "links": []}
+    for _, r in df.iterrows():
+        tasks["data"].append({
+            "id": int(r.id),
+            "table": f"{r.table_number}卓",
+            "resource": f"{r.date}-{r.table_number}",
+            "text": r.plan_name,
+            "start_date": f"{r.date} {r.start_time.strip()}",
+            "end_date": f"{r.date} {r.seat_time.strip()}",
+            "status": int(r.status)
+        })
 
-    # まず全席分ループ
-    for table in tables:
-        record = records_dict.get(table.table_number)
-
-        if record:
-            try:
-                start_time = str(record['start_time']).zfill(4)
-                end_time = str(record['out_time']).zfill(4) if record['out_time'] else "2359"
-                start_time_fmt = f"{start_time[:2]}:{start_time[2:]}"
-                end_time_fmt = f"{end_time[:2]}:{end_time[2:]}"
-
-                # status計算（invoiceChecked + paymentChecked）
-                status = int(record['invoiceChecked']) + int(record['paymentChecked'])
-
-                tasks["data"].append({
-                    "id": int(record['id']),
-                    "table": f"{record['table_number']}卓",
-                    "resource": f"{record['date']}-{record['table_number']}",
-                    "text": record['plan_name'],
-                    "start_date": f"{record['date']} {start_time_fmt}",
-                    "end_date": f"{record['date']} {end_time_fmt}",
-                    "status": status
-                })
-            except Exception as e:
-                import logging
-                logging.error(f"レコード処理中にエラー: {e}")
-                continue
-
-        else:
-            # データなし席 → 「未使用」として出す
-            tasks["data"].append({
-                "id": f"table-{table.table_number}",
-                "table": f"{table.table_number}卓",
-                "resource": f"{selected_date}-{table.table_number}",
-                "text": "未使用",
-                "start_date": f"{selected_date} 00:00",
-                "end_date": f"{selected_date} 23:59",
-                "status": 0
-            })
-
-    # タスクをソート（status優先 → end_time優先）
+    # タスクソート
     def task_sort_key(task):
         is_active = 0 if task['status'] <= 1 else 1
         end_dt = dt.strptime(task['end_date'], "%Y-%m-%d %H:%M")

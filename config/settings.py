@@ -88,16 +88,27 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+import os
 import dj_database_url
 
-
-DATABASES = {
-    'default': dj_database_url.config(
-    default=config('DATABASE_URL'),
-    conn_max_age=600,
-    ssl_require=True
-    ),
-}
+if DEBUG:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": "eatryhub_db",
+            "USER": "eatryhub_user",
+            "PASSWORD": "your_db_password",  # docker-compose.yml の値に合わせる
+            "HOST": "db",  # docker-compose.yml 上のサービス名
+            "PORT": 5432,
+        }
+    }
+else:
+    DATABASES = {
+        "default": dj_database_url.config(
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -120,7 +131,6 @@ AUTH_PASSWORD_VALIDATORS = [
 # 開発サーバー用
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='', cast=Csv())
 CSRF_TRUSTED_ORIGINS = ['http://localhost:8000',
-
                         'https://eatryhub-b060cdd5c6f0.herokuapp.com/',
                         'https://eatryhub-b060cdd5c6f0.herokuapp.com',
                         'https://www.eatryhub.com'
