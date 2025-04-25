@@ -1,5 +1,6 @@
 web: gunicorn config.wsgi \
-     --workers 3 \
-     --threads 2 \
+     --workers 2 \
+     --threads 4 \
      --worker-connections 100 \
-     --log-level info
+     --log-level info \
+     --timeout 30
