@@ -28,3 +28,6 @@ staticfiles/admin
 
 # OS固有ファイル
 .DS_Store
+
+# データベースcsv
+timemanagementrecord.csv
