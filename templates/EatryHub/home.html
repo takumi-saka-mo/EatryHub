@@ -296,6 +296,26 @@
             }
         });
     </script>
+    <script>
+        function fetchTasksAndUpdateGantt() {
+            fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' }})
+                .then(response => response.json())
+                .then(newTasks => {
+                    gantt.clearAll();
+                    gantt.parse(newTasks);
+        
+                    gantt.addMarker({
+                        start_date: new Date(),
+                        css: "today_marker",
+                        title: "現在時刻: "+new Date().toLocaleTimeString()
+                    });
+                })
+                .catch(error => {
+                    console.error("Error : チャート描画に失敗しました:", error);
+                });
+        }
+        setInterval(fetchTasksAndUpdateGantt, 5000);
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js" integrity="sha512-AJUWwfMxFuQLv1iPZOTZX0N/jTCIrLxyZjTRKQostNU71MzZTEPHjajSK20Kj1TwJELpP7gl+ShXw5brpnKwEg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 

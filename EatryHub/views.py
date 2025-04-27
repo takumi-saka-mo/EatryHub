@@ -1,10 +1,12 @@
 import sqlite3
 import pandas as pd
 import json
+from django.http import JsonResponse
 from datetime import datetime as dt
 # from sqlalchemy import create_engine
 from TimeManagement.models import TimeManagementRecord
 from EatryHub.models import TableStructure
+from django.utils import timezone
 
 
 from django.conf import settings
@@ -124,13 +126,24 @@ def home(request):
     # タスク作成
     tasks = {"data": [], "links": []}
     for _, r in df.iterrows():
+        # デフォルト seat_time
+        seat_time = r.seat_time.strip()
+
+        # paymentChecked が1なら現在時刻をseat_timeに上書き
+        # プラン名に応じた判定
+        if r.paymentChecked == 1:
+            if r.plan_name not in ['食べ飲み90m', '食べ飲み120m', 'スーパー']:
+                # 単品, エンドレス(実装予定)ならば, チェックボックス押下時の時刻をガントチャート終了とする.
+                now = timezone.localtime()
+                seat_time = now.strftime("%H:%M")
+
         tasks["data"].append({
             "id": int(r.id),
             "table": f"{r.table_number}卓",
             "resource": f"{r.date}-{r.table_number}",
             "text": r.plan_name,
             "start_date": f"{r.date} {r.start_time.strip()}",
-            "end_date": f"{r.date} {r.seat_time.strip()}",
+            "end_date": f"{r.date} {seat_time}",
             "status": int(r.status)
         })
 
@@ -142,4 +155,10 @@ def home(request):
 
     tasks["data"] = sorted(tasks["data"], key=task_sort_key)
 
-    return render(request, 'EatryHub/home.html', {'tasks': json.dumps(tasks)})
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # もしAjaxリクエストならtasksだけ返す
+        return JsonResponse(tasks)
+
+    return render(request, 'EatryHub/home.html', {
+        'tasks': json.dumps(tasks)
+    })
