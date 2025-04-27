@@ -210,7 +210,7 @@
                                 <br>
                                 <p>店舗名: {{ user.store.name }}</p>
                                 <form id="dateForm" class="form-inline mt-3">
-                                    <label for="dateInput" class="mr-2">日付を選択:</label>
+                                    <label for="dateInput" class="mr-2">表示日付 : </label>
                                     <input type="date" id="dateInput" name="selected_date" class="form-control mr-2" value="{{ today|date:'Y-m-d' }}">
                                     <button type="submit" class="btn btn-primary">表示</button>
                                 </form>
