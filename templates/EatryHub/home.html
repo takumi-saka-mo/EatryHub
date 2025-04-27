@@ -279,7 +279,7 @@
 
                                 // 日付選択フォームにイベント登録
                                 document.getElementById("dateForm").addEventListener("submit", function(event){
-                                    event.preventDefault(); // デフォルトの送信止める
+                                    event.preventDefault(); // デフォルトの送信止める処理
 
                                     const selectedDate = document.getElementById("dateInput").value;
 
@@ -291,7 +291,7 @@
                                         console.log("取得したtasks:", newTasks);
                                         gantt.clearAll();
 
-                                        // ここで範囲を再設定
+                                        // 範囲の再設定
                                         const startDates = newTasks.data.map(task => new Date(task.start_date).getTime());
                                         const endDates = newTasks.data.map(task => new Date(task.end_date).getTime());
                                         const minStart = new Date(Math.min(...startDates));
@@ -308,15 +308,16 @@
                                             return {
                                                 id: task.id,
                                                 text: task.text,
-                                                start_date: formatDate(start),  // ここで開始時間をちゃんと渡す
-                                                end_date: formatDate(end),      // ここで終了時間も渡す
+                                                start_date: formatDate(start),
+                                                end_date: formatDate(end),
                                                 parent: 0,
                                                 resource: task.resource || "",
-                                                status: task.status || 0        // ★ここ追加！必ずステータスを持たせる
+                                                status: task.status || 0,
+                                                table: task.table || ""
                                             };
                                         });
 
-                                        gantt.init("gantt_here"); // ← これ大事！再初期化
+                                        gantt.init("gantt_here");
                                         gantt.parse({ data: formattedTasks, links: [] });
 
                                         gantt.addMarker({
@@ -414,12 +415,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js" integrity="sha512-AJUWwfMxFuQLv1iPZOTZX0N/jTCIrLxyZjTRKQostNU71MzZTEPHjajSK20Kj1TwJELpP7gl+ShXw5brpnKwEg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
     <script>
     document.addEventListener("DOMContentLoaded", function() {
         flatpickr("#dateInput", {
             dateFormat: "Y-m-d",
             defaultDate: "today",
-            locale: "ja"  // ← オプションで日本語にできる！
+            locale: "ja"
         });
     });
     </script>
