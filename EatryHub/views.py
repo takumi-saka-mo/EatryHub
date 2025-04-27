@@ -132,7 +132,7 @@ def home(request):
         # paymentChecked が1なら現在時刻をseat_timeに上書き
         # プラン名に応じた判定
         if r.paymentChecked == 1:
-            if r.plan_name not in ['食べ飲み90m', '食べ飲み120m', 'スーパー']:
+            if r.plan_name not in ['レモン', '食べ飲み90m', '食べ飲み120m', 'スーパー']:
                 # 単品, エンドレス(実装予定)ならば, チェックボックス押下時の時刻をガントチャート終了とする.
                 now = timezone.localtime()
                 seat_time = now.strftime("%H:%M")
