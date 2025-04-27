@@ -73,15 +73,19 @@ def home(request):
     # DataFrameに変換
     try:
         df = pd.DataFrame.from_records(records, columns=cols)
-        if df.empty:
-            tasks = {"data": [], "links": []}
-            return render(request, 'EatryHub/home.html', {'tasks': json.dumps(tasks)})
     except Exception as e:
         import logging
         logging.error(f"DataFrame生成エラー: {e}")
         df = pd.DataFrame()
 
-    # 日付変換
+    # データが空なら即返す
+    if df.empty:
+        tasks = {"data": [], "links": []}
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse(tasks)
+        return render(request, 'EatryHub/home.html', {'tasks': json.dumps(tasks)})
+
+    # ここからはdfが空でない前提で進める！
     df['date'] = pd.to_datetime(df['date']).dt.date
     df = df[df['date'] == selected_date]
 
@@ -96,20 +100,18 @@ def home(request):
     # seat_timeカラムを作成
     df['seat_time'] = None
 
-    # レモンプラン：out_timeが"00:00"なら"23:59"に補正
+    # レモンプラン
     mask_lemon = df['plan_name'] == 'レモン'
     df.loc[mask_lemon, 'seat_time'] = df.loc[mask_lemon, 'out_time'].apply(
         lambda t: "23:59" if t == "00:00" else t
     )
 
-    # その他のプラン："【アウト】"を除いたextensionsを使う
+    # その他プラン
     mask = df['plan_name'].isin(['食べ飲み90m', '食べ飲み120m', 'スーパー'])
     df.loc[mask, 'seat_time'] = df.loc[mask, 'extensions'].str.replace('【アウト】', '', regex=False)
 
-    # seat_timeが欠損なら"23:59"補完
     df['seat_time'] = df['seat_time'].fillna("23:59")
 
-    # 24:00以降を23:59に丸める関数
     def cap_time(time_str):
         try:
             hour, minute = map(int, time_str.split(":"))
@@ -120,20 +122,15 @@ def home(request):
             return "23:59"
     df['seat_time'] = df['seat_time'].apply(cap_time)
 
-    # status計算
+    # ステータス計算
     df['status'] = df['invoiceChecked'].astype(int) + df['paymentChecked'].astype(int)
 
-    # タスク作成
+    # タスク生成
     tasks = {"data": [], "links": []}
     for _, r in df.iterrows():
-        # デフォルト seat_time
         seat_time = r.seat_time.strip()
-
-        # paymentChecked が1なら現在時刻をseat_timeに上書き
-        # プラン名に応じた判定
         if r.paymentChecked == 1:
             if r.plan_name not in ['レモン', '食べ飲み90m', '食べ飲み120m', 'スーパー']:
-                # 単品, エンドレス(実装予定)ならば, チェックボックス押下時の時刻をガントチャート終了とする.
                 now = timezone.localtime()
                 seat_time = now.strftime("%H:%M")
 
@@ -147,7 +144,7 @@ def home(request):
             "status": int(r.status)
         })
 
-    # タスクソート
+    # ソート
     def task_sort_key(task):
         is_active = 0 if task['status'] <= 1 else 1
         end_dt = dt.strptime(task['end_date'], "%Y-%m-%d %H:%M")
@@ -156,7 +153,6 @@ def home(request):
     tasks["data"] = sorted(tasks["data"], key=task_sort_key)
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        # もしAjaxリクエストならtasksだけ返す
         return JsonResponse(tasks)
 
     return render(request, 'EatryHub/home.html', {

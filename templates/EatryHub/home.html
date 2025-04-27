@@ -25,6 +25,9 @@
         <!-- dhtmlxGantt CSS -->
         <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css">
 
+        <!-- 日付 -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
     </head>
 <body class="hold-transition sidebar-mini">
     <div class="wrapper">
@@ -206,6 +209,11 @@
                                 <h3 class="card-title">テーブル時間使用状況</h3>
                                 <br>
                                 <p>店舗名: {{ user.store.name }}</p>
+                                <form id="dateForm" class="form-inline mt-3">
+                                    <label for="dateInput" class="mr-2">日付を選択:</label>
+                                    <input type="date" id="dateInput" name="selected_date" class="form-control mr-2" value="{{ today|date:'Y-m-d' }}">
+                                    <button type="submit" class="btn btn-primary">表示</button>
+                                </form>
                             </div>
                             <!-- ガントチャート描画用コンテナ -->
                             <div class="card-body p-0" style="height: 500px;">
@@ -223,6 +231,9 @@
                                 gantt.config.xml_date = "%Y-%m-%d %H:%i";
                                 // 同テーブルは並列して描画
                                 gantt.config.group_tasks = true;
+                                gantt.config.data_format = "json"; // json形式で受け取り
+                                gantt.config.data_property = "data";
+                                gantt.config.links_property = "links";
 
                                 // タスク
                                 gantt.templates.task_class = (start,end,task) => {
@@ -248,22 +259,76 @@
 
                                 // カラム
                                 gantt.config.columns = [{ name:"table", label:"テーブル", tree:true, width:30 }];
-                                
+
+                                // 初期データ
                                 const tasks = {{ tasks|safe }};
-                                // 描画
-                                
+
+                                // dhtmlxGanttプラグイン
                                 gantt.plugins({ marker:true });
+
+                                // 初期化
                                 gantt.init("gantt_here");
                                 gantt.parse(tasks);
 
                                 // 現在時刻マーカー
                                 gantt.addMarker({
-                                start_date: new Date(),
-                                css: "today_marker",
-                                title: "現在時刻: "+new Date().toLocaleTimeString()
+                                    start_date: new Date(),
+                                    css: "today_marker",
+                                    title: "現在時刻: "+new Date().toLocaleTimeString()
                                 });
-                                console.log("受け渡されたデータフレーム")
-                                console.log(tasks);
+
+                                // 日付選択フォームにイベント登録
+                                document.getElementById("dateForm").addEventListener("submit", function(event){
+                                    event.preventDefault(); // デフォルトの送信止める
+
+                                    const selectedDate = document.getElementById("dateInput").value;
+
+                                    fetch(window.location.pathname + "?selected_date=" + selectedDate, {
+                                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                                    })
+                                    .then(response => response.json())
+                                    .then(newTasks => {
+                                        console.log("取得したtasks:", newTasks);
+                                        gantt.clearAll();
+
+                                        // ここで範囲を再設定
+                                        const startDates = newTasks.data.map(task => new Date(task.start_date).getTime());
+                                        const endDates = newTasks.data.map(task => new Date(task.end_date).getTime());
+                                        const minStart = new Date(Math.min(...startDates));
+                                        const maxEnd = new Date(Math.max(...endDates));
+
+                                        gantt.config.start_date = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate(), 0, 0);
+                                        gantt.config.end_date   = new Date(maxEnd.getFullYear(), maxEnd.getMonth(), maxEnd.getDate(), 23, 59);
+
+
+                                        const formattedTasks = newTasks.data.map(task => {
+                                            const start = new Date(task.start_date);
+                                            const end = new Date(task.end_date);
+                                        
+                                            return {
+                                                id: task.id,
+                                                text: task.text,
+                                                start_date: formatDate(start),  // ここで開始時間をちゃんと渡す
+                                                end_date: formatDate(end),      // ここで終了時間も渡す
+                                                parent: 0,
+                                                resource: task.resource || "",
+                                                status: task.status || 0        // ★ここ追加！必ずステータスを持たせる
+                                            };
+                                        });
+
+                                        gantt.init("gantt_here"); // ← これ大事！再初期化
+                                        gantt.parse({ data: formattedTasks, links: [] });
+
+                                        gantt.addMarker({
+                                            start_date: new Date(),
+                                            css: "today_marker",
+                                            title: "現在時刻: "+new Date().toLocaleTimeString()
+                                        });
+                                    })
+                                    .catch(error => {
+                                        console.error("Error: データ取得中にエラーが発生しました.", error);
+                                    });
+                                });
                             </script>
                         </div>
                     </div>
@@ -297,27 +362,66 @@
         });
     </script>
     <script>
+        function formatDate(date) {
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+            const hh = String(date.getHours()).padStart(2, '0');
+            const min = String(date.getMinutes()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+        }
         function fetchTasksAndUpdateGantt() {
-            fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' }})
-                .then(response => response.json())
-                .then(newTasks => {
-                    gantt.clearAll();
-                    gantt.parse(newTasks);
+            const selectedDate = document.getElementById("dateInput").value;
         
-                    gantt.addMarker({
-                        start_date: new Date(),
-                        css: "today_marker",
-                        title: "現在時刻: "+new Date().toLocaleTimeString()
-                    });
-                })
-                .catch(error => {
-                    console.error("Error : チャート描画に失敗しました:", error);
+            fetch(window.location.pathname + "?selected_date=" + selectedDate, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(newTasks => {
+                console.log("取得したtasks:", newTasks);
+                gantt.clearAll();
+                        
+                const formattedTasks = newTasks.data.map(task => {
+                    const start = new Date(task.start_date);
+                    const end = new Date(task.end_date);
+
+                
+                    return {
+                        id: task.id,
+                        text: task.text,
+                        start_date: formatDate(start),
+                        end_date: formatDate(end),
+                        parent: 0,
+                        resource: task.resource || "",
+                        status: task.status || 0
+                    };
                 });
+            
+                gantt.parse({ data: formattedTasks, links: [] });
+            
+                gantt.addMarker({
+                    start_date: new Date(),
+                    css: "today_marker",
+                    title: "現在時刻: "+new Date().toLocaleTimeString()
+                });
+            })
+            .catch(error => {
+                console.error("Error : チャート描画に失敗しました:", error);
+            });
         }
         setInterval(fetchTasksAndUpdateGantt, 5000);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js" integrity="sha512-AJUWwfMxFuQLv1iPZOTZX0N/jTCIrLxyZjTRKQostNU71MzZTEPHjajSK20Kj1TwJELpP7gl+ShXw5brpnKwEg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        flatpickr("#dateInput", {
+            dateFormat: "Y-m-d",
+            defaultDate: "today",
+            locale: "ja"  // ← オプションで日本語にできる！
+        });
+    });
+    </script>
     </body>
 </html>
