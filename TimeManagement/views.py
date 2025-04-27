@@ -61,7 +61,12 @@ def table_view(request):
                 # Clear for other plans
                 record.stay = record.extensions = record.out_time = ""
 
-            record.save(update_fields=['stay','extensions','out_time'])
+            save_fields = ['stay', 'extensions']
+            if record.plan_name != "単品":  # ★「単品以外」ならout_timeも保存
+                save_fields.append('out_time')
+            if record.start_time:  # ★water_time生成に必要なstart_timeがあるなら
+                save_fields.append('water_time')
+            record.save(update_fields=save_fields)
             record.calculated_water_time = TimeManagementProcessor.calculate_water(record.start_time, override_level=record.water_override)
 
     record_dict = {r.row_number: r for r in records}
@@ -515,9 +520,11 @@ def update_cell(request):
         if '8' in updated_cells:
             record.water_time = updated_cells['8']
         if '10' in updated_cells:
-            record.out_time = updated_cells['10']
+            if record.plan_name != "単品":  # ★単品なら out_time を上書き禁止
+                record.out_time = updated_cells['10']
         else:
-            record.out_time = "" if record.plan_name != "レモン" or not record.end_time else record.out_time
+            if record.plan_name != "単品":  # ★単品なら out_time をクリアしない
+                record.out_time = "" if record.plan_name != "レモン" or not record.end_time else record.out_time
 
         # ← これだけで stay, extensions, water_time, out_time をまとめて保存
         record.save(update_fields=['stay', 'extensions', 'water_time', 'out_time'])

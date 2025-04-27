@@ -408,6 +408,31 @@
             updateStatus(row);
         }
 
+        function updateEndTimeOnCheck(tableNumber) {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const timeFormatted = `${hours}${minutes}`;  // 例: "1730"
+        
+            $.ajax({
+                url: "/EatryHub/update_end_time/",   // ←次にサーバー側で作るURL
+                method: "POST",
+                data: {
+                    table_number: tableNumber,
+                    end_time: timeFormatted,
+                },
+                headers: {
+                    "X-CSRFToken": csrfToken
+                },
+                success: function(response) {
+                    console.log("終了時間更新成功！", response);
+                },
+                error: function(xhr, status, error) {
+                    console.error("終了時間更新エラー:", error);
+                }
+            });
+        }
+
         // 各イベント設定
         $(document)
             .on("change", ".plan-select", function(){
@@ -431,6 +456,18 @@
                 col13: $('td[data-row="'+row+'"][data-col="13"] input[type="checkbox"]').prop("checked") ? "true" : "false",
                 col14: $('td[data-row="'+row+'"][data-col="14"] input[type="checkbox"]').prop("checked") ? "true" : "false"
             };
+            const plan = $(`td[data-row="${row}"][data-col="1"] select`).val();
+            if (plan === "単品") {
+                // 終了時間を現在時刻に更新
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                const timeFormatted = `${hours}${minutes}`;  // "1730"みたいな
+                $(`td[data-row="${row}"][data-col="5"]`).text(timeFormatted); // セルにもセット
+
+                // 同時にサーバーにも送る
+                sendAjaxUpdate(row, 5, timeFormatted);
+            }
             sendAjaxUpdateCheckboxes(row, checkboxes);
             })
             .on('blur', 'td.editable', function(){

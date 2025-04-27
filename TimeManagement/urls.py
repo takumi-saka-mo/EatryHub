@@ -8,6 +8,7 @@ app_name = 'TimeManagement'
 urlpatterns = [
     path('', views.table_view, name='table_view'),
     path('update/', views.update_cell, name='update_cell'),
+    path('update_cell/', views.update_cell, name='update_cell'),
 ]
 
 # DEBUG=True のときだけ静的ファイルを提供
