@@ -85,7 +85,6 @@ def home(request):
             return JsonResponse(tasks)
         return render(request, 'EatryHub/home.html', {'tasks': json.dumps(tasks)})
 
-    # ここからはdfが空でない前提で進める！
     df['date'] = pd.to_datetime(df['date']).dt.date
     df = df[df['date'] == selected_date]
 
@@ -97,7 +96,7 @@ def home(request):
     for col in ['start_time', 'end_time', 'out_time']:
         df[col] = df[col].astype(str).str.zfill(4).str.replace(r'(\d{2})(\d{2})', r'\1:\2', regex=True)
 
-    # seat_timeカラムを作成
+    # seat_timeカラムを生成
     df['seat_time'] = None
 
     # レモンプラン
@@ -144,7 +143,7 @@ def home(request):
             "status": int(r.status)
         })
 
-    # ソート
+    # チャートの卓番をソート
     def task_sort_key(task):
         is_active = 0 if task['status'] <= 1 else 1
         end_dt = dt.strptime(task['end_date'], "%Y-%m-%d %H:%M")

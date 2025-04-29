@@ -5,8 +5,6 @@ from django.core.validators import RegexValidator
 class Store(models.Model):
     name = models.CharField(max_length=100, unique=True)
     address = models.CharField(max_length=255, blank=True, null=True)
-    # その他必要なフィールドを追加
-
     def __str__(self):
         return self.name
 
@@ -23,7 +21,7 @@ class CustomUser(AbstractUser):
         error_messages={'unique': "このユーザー名は既に存在します。"},
     )
     additional_field = models.CharField(max_length=255, blank=True, null=True)
-    # ここで store フィールドを追加
+    # storeフィールド(店舗ごとの閲覧が可能)
     store = models.ForeignKey(Store, on_delete=models.SET_NULL, null=True, blank=True)
     
     groups = models.ManyToManyField(
@@ -48,12 +46,12 @@ class TableUsage(models.Model):
     progress     = models.FloatField(default=0.0)
 
 
-# home表示チャートのデータを再構成
+# home表示chartデータを再構成
 
 class TableStructure(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE)  # 店舗ごと
     table_number = models.IntegerField()
-    capacity = models.IntegerField(default=4)  # 座席の定員（必要なら）
+    capacity = models.IntegerField(default=4)  # 座席の定員(将来的に実装予定)
 
     class Meta:
         unique_together = ('store', 'table_number')  # 同じ店舗内でテーブル番号は一意
