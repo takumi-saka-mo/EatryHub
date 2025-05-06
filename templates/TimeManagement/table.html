@@ -482,9 +482,9 @@
             if(e.key==="Escape"){ $(this).blur(); }
             else if(e.key==="Enter"){
                 e.preventDefault();
-                const nextCell = $(`td[data-row="${row}"][data-col="${col+1}"]`);
+                const nextCell = $(`td[data-row="${row+1}"][data-col="${col}"]`);
                 if(nextCell.length && nextCell.hasClass('editable')){
-                nextCell.focus();
+                    nextCell.focus();
                 }
             }
             })
