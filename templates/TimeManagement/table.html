@@ -118,7 +118,7 @@
                                 {% if record %}{{ record.calculated_water_time }}{% endif %}
                             </td>
                         {% elif col == 9 %}
-                            <td data-row="{{ row }}" data-col="9" class="editable nav-cell" contenteditable="true" tabindex="0">
+                            <td data-row="{{ row }}" data-col="9" class="read-only nav-cell" contenteditable="false" tabindex="0">
                                 <button type="button" class="btn btn-secondary override-btn" 
                                         data-row="{{ row }}" data-col="9" 
                                         data-level="{% if record %}{{ record.water_override }}{% else %}0{% endif %}">
