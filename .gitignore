@@ -31,3 +31,4 @@ staticfiles/admin
 
 # データベースcsv
 timemanagementrecord.csv
+timemanagement.csv
