@@ -526,11 +526,10 @@
                 const col = $(this).data('col');
                 const row = $(this).data('row');
             
-                // ヘッダーの列ハイライトをリセット＋追加（既存のまま）
                 $('th').removeClass('highlight');
                 $(`th[data-col="${col}"]`).addClass('highlight');
             
-                // 行のハイライト：まず全部外す
+                // 行のハイライト(リセット)
                 $('tr[data-row-id]').removeClass('row-highlight');
             
                 // 該当行だけにハイライト付与
@@ -543,7 +542,6 @@
                 $('tr[data-row-id]').removeClass('row-highlight');
             });
 
-            // フォーカスが外れたとき（オプションでリセットしたい場合）
             $(document).on('blur', selector, function(){
                 $('th').removeClass('highlight');
             });
@@ -561,7 +559,7 @@
                   const $cell = $(this);
                   const row = $cell.data('row');
                   const col = $cell.data('col');
-                  $cell.text('');                      // セル内テキストをまるごと消去
+                  $cell.text('');                      // セル内テキストをまるごと消去(表計算ソフトライクな操作)
                   sendAjaxUpdate(row, col, '');        // 空文字でサーバ更新
                 }
               });
