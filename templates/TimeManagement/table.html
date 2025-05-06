@@ -53,22 +53,22 @@
         <thead>
             <tr>
                 <th></th>
-                <th>プラン名</th>
-                <th>卓番</th>
-                <th>人数</th>
-                <th>開始時間</th>
-                <th>終了時間</th>
-                <th>滞在時間</th>
-                <th>延長回数(合計)</th>
-                <th>water</th>
-                <th>補充回数</th>
-                <th>退店時間</th>
-                <th>L.O.</th>
-                <th>レバー</th>
-                <th>伝票</th>
-                <th>会計</th>
-                <th>ステータス</th>
-                <th>備考</th>
+                <th data-col="1">プラン名</th>
+                <th data-col="2">卓番</th>
+                <th data-col="3">人数</th>
+                <th data-col="4">開始時間</th>
+                <th data-col="5">終了時間</th>
+                <th data-col="6">滞在時間</th>
+                <th data-col="7">延長回数(合計)</th>
+                <th data-col="8">water</th>
+                <th data-col="9">補充回数</th>
+                <th data-col="10">退店時間</th>
+                <th data-col="11">L.O.</th>
+                <th data-col="12">レバー</th>
+                <th data-col="13">伝票</th>
+                <th data-col="14">会計</th>
+                <th data-col="15">ステータス</th>
+                <th data-col="16">備考</th>
             </tr>
         </thead>
         <tbody>
@@ -521,10 +521,34 @@
             // nav-cellはフォーカス対象
             const selector = 'td.nav-cell';
         
-            // フォーカス時に activeCell を保持
-            let $activeCell = null;
             $(document).on('focus', selector, function(){
-            $activeCell = $(this);
+                $activeCell = $(this);
+                const col = $(this).data('col');
+                const row = $(this).data('row');
+            
+                // ヘッダーの列ハイライトをリセット＋追加（既存のまま）
+                $('th').removeClass('highlight');
+                $(`th[data-col="${col}"]`).addClass('highlight');
+            
+                // 行のハイライト：まず全部外す
+                $('tr[data-row-id]').removeClass('row-highlight');
+            
+                // 該当行だけにハイライト付与
+                $(`tr[data-row-id="${row}"]`).addClass('row-highlight');
+            });
+            
+            // フォーカスが外れたときに行ハイライトも消す（任意）
+            $(document).on('blur', selector, function(){
+                $('th').removeClass('highlight');
+                $('tr[data-row-id]').removeClass('row-highlight');
+            });
+
+
+            
+
+            // フォーカスが外れたとき（オプションでリセットしたい場合）
+            $(document).on('blur', selector, function(){
+                $('th').removeClass('highlight');
             });
         
             // 矢印キーでセル移動

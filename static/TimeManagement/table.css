@@ -75,6 +75,12 @@ tbody tr:nth-child(even) {
     background-color: #f2f2f2;
 }
 
+/* 選択中の行をハイライトで強調 */
+tr.row-highlight {
+    background-color: #ffffcc !important; /* やさしい黄色背景 */
+    transition: background-color 0.3s ease;
+  }
+
 /* 編集可能 */
 td.editable {
     cursor: pointer;
