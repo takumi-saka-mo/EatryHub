@@ -79,7 +79,7 @@
                     {% for col in cols %}
                         {% if col == 1 %}
                             <!-- プラン名 -->
-                            <td data-row="{{ row }}" data-col="1">
+                            <td data-row="{{ row }}" data-col="1" id="plan_name-{{ row }}">
                                 <select class="plan-select" data-row="{{ row }}" data-col="1">
                                     <option value=""></option>
                                     <option value="レモン" {% if record and record.plan_name == "レモン" %}selected{% endif %}>レモン</option>
@@ -90,31 +90,31 @@
                                 </select>
                             </td>
                         {% elif col == 2 %}
-                            <td data-row="{{ row }}" data-col="2" class="editable nav-cell" contenteditable="true" tabindex="0">
+                            <td data-row="{{ row }}" data-col="2" class="editable nav-cell" contenteditable="true" tabindex="0" id="table_number-{{ row }}">
                                 {% if record %}{{ record.table_number }}{% endif %}
                             </td>
                         {% elif col == 3 %}
-                            <td data-row="{{ row }}" data-col="3" class="editable nav-cell" contenteditable="true" tabindex="0">
+                            <td data-row="{{ row }}" data-col="3" class="editable nav-cell" contenteditable="true" tabindex="0" id="people_count-{{ row }}">
                                 {% if record %}{{ record.people_count|default:"" }}{% endif %}
                             </td>
                         {% elif col == 4 %}
-                            <td data-row="{{ row }}" data-col="4" class="editable nav-cell" contenteditable="true" tabindex="0">
+                            <td data-row="{{ row }}" data-col="4" class="editable nav-cell" contenteditable="true" tabindex="0" id="start_time-{{ row }}">
                                 {% if record %}{{ record.start_time }}{% endif %}
                             </td>
                         {% elif col == 5 %}
-                            <td data-row="{{ row }}" data-col="5" class="editable nav-cell" contenteditable="true" tabindex="0">
+                            <td data-row="{{ row }}" data-col="5" class="editable nav-cell" contenteditable="true" tabindex="0" id="end_time-{{ row }}">
                                 {% if record %}{{ record.end_time }}{% endif %}
                             </td>
                         {% elif col == 6 %}
-                            <td data-row="{{ row }}" data-col="6" class="read-only" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="6" class="read-only" tabindex="-1" id="stay-{{ row }}">
                                 {% if record %}{{ record.calculated_col6 }}{% endif %}
                             </td>
                         {% elif col == 7 %}
-                            <td data-row="{{ row }}" data-col="7" class="read-only" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="7" class="read-only" tabindex="-1" id="extensions-{{ row }}">
                                 {% if record %}{{ record.calculated_col7 }}{% endif %}
                             </td>
                         {% elif col == 8 %}
-                            <td data-row="{{ row }}" data-col="8" class="read-only" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="8" class="read-only" tabindex="-1" id="water_time-{{ row }}">
                                 {% if record %}{{ record.calculated_water_time }}{% endif %}
                             </td>
                         {% elif col == 9 %}
@@ -126,7 +126,7 @@
                                 </button>
                             </td>
                         {% elif col == 10 %}
-                            <td data-row="{{ row }}" data-col="10" class="read-only" tabindex="-1">
+                            <td data-row="{{ row }}" data-col="10" class="read-only" tabindex="-1" id="out_time-{{ row }}">
                                 {% if record %}{{ record.out_time }}{% endif %}
                             </td>
                         {% elif col == 11 %}
@@ -152,7 +152,7 @@
                                 </button>
                             </td>
                         {% elif col == 16 %}
-                            <td data-row="{{ row }}" data-col="16" class="editable nav-cell" contenteditable="true" tabindex="0">
+                            <td data-row="{{ row }}" data-col="16" class="editable nav-cell" contenteditable="true" tabindex="0" id="memo-{{ row }}">
                                 {% if record %}{{ record.memo }}{% endif %}
                             </td>
                         {% else %}
@@ -586,6 +586,41 @@
             });
         });
     });
+
+    // 差分取得と描画
+    function fetchTableData(selectedDate) {
+        fetch(`/TimeManagement/table-data-api/?selected_date=${selectedDate}`)
+            .then(response => response.json())
+            .then(data => {
+                data.forEach(record => {
+                    const row = record.row_number;
+                    if (record.plan_name !== undefined)
+                        document.querySelector(`td[data-row="${row}"][data-col="1"] select`).value = record.plan_name || "";
+                    if (record.table_number !== undefined)
+                        document.querySelector(`td[data-row="${row}"][data-col="2"]`).textContent = record.table_number || "";
+                    if (record.people_count !== undefined)
+                        document.querySelector(`td[data-row="${row}"][data-col="3"]`).textContent = record.people_count || "";
+                    if (record.start_time !== undefined)
+                        document.querySelector(`td[data-row="${row}"][data-col="4"]`).textContent = record.start_time || "";
+                    if (record.end_time !== undefined)
+                        document.querySelector(`td[data-row="${row}"][data-col="5"]`).textContent = record.end_time || "";
+                    if (record.stay !== undefined)
+                        document.querySelector(`td[data-row="${row}"][data-col="6"]`).textContent = record.stay || "";
+                    if (record.extensions !== undefined)
+                        document.querySelector(`td[data-row="${row}"][data-col="7"]`).textContent = record.extensions || "";
+                    if (record.water_time !== undefined)
+                        document.querySelector(`td[data-row="${row}"][data-col="8"]`).textContent = record.water_time || "";
+                    if (record.out_time !== undefined)
+                        document.querySelector(`td[data-row="${row}"][data-col="10"]`).textContent = record.out_time || "";
+                });
+            });
+    }
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        const selectedDate = document.getElementById("selected_date").value;
+        fetchTableData(selectedDate);
+    });
+
 </script>
 </body>
 </html>

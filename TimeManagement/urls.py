@@ -9,6 +9,7 @@ urlpatterns = [
     path('', views.table_view, name='table_view'),
     path('update/', views.update_cell, name='update_cell'),
     path('update_cell/', views.update_cell, name='update_cell'),
+    path('table-data-api/', views.table_data_api, name='table_data_api'),
 ]
 
 # DEBUG=True のときだけ静的ファイルを提供

@@ -77,6 +77,26 @@ def table_view(request):
         'selected_date': selected_date.strftime('%Y-%m-%d'),
     })
 
+
+
+
+@login_required
+def table_data_api(request):
+    selected_date_str = request.GET.get('selected_date')
+    try:
+        selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
+    except (ValueError, TypeError):
+        selected_date = date.today()
+
+    records = TimeManagementRecord.objects.filter(
+        date=selected_date, store=request.user.store
+    ).values(
+        'row_number', 'plan_name', 'start_time', 'end_time',
+        'stay', 'extensions', 'out_time', 'water_time',
+        'people_count', 'table_number'
+    )
+    return JsonResponse(list(records), safe=False)
+
 # viewsのメイン処理
 class TimeManagementProcessor:
     def __init__(self, row_id, col_number, value):
