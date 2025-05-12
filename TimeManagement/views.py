@@ -79,7 +79,6 @@ def table_view(request):
 
 
 
-
 @login_required
 def table_data_api(request):
     selected_date_str = request.GET.get('selected_date')
@@ -87,15 +86,22 @@ def table_data_api(request):
         selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
     except (ValueError, TypeError):
         selected_date = date.today()
+    try:
+        records = TimeManagementRecord.objects.filter(
+            date=selected_date, store=request.user.store
+        ).values(
+            'row_number', 'plan_name', 'start_time', 'end_time',
+            'stay', 'extensions', 'out_time', 'water_time',
+            'people_count', 'table_number', 'invoiceChecked', 'paymentChecked'
+        )
+        return JsonResponse(list(records), safe=False)
+    except Exception as e:
+        print("APIエラー発生")
+        return JsonResponse({'error': 'Internal Server Error'}, status=500)
 
-    records = TimeManagementRecord.objects.filter(
-        date=selected_date, store=request.user.store
-    ).values(
-        'row_number', 'plan_name', 'start_time', 'end_time',
-        'stay', 'extensions', 'out_time', 'water_time',
-        'people_count', 'table_number'
-    )
-    return JsonResponse(list(records), safe=False)
+@login_required
+def mobile_view(request):
+    return render(request, 'TimeManagement/mobile_view.html')
 
 # viewsのメイン処理
 class TimeManagementProcessor:

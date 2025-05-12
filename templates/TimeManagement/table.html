@@ -612,6 +612,7 @@
                         document.querySelector(`td[data-row="${row}"][data-col="8"]`).textContent = record.water_time || "";
                     if (record.out_time !== undefined)
                         document.querySelector(`td[data-row="${row}"][data-col="10"]`).textContent = record.out_time || "";
+                    loadRecords();
                 });
             });
     }

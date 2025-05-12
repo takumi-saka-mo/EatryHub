@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>閲覧専用 - TimeManagement</title>
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'TimeManagement/table.css' %}">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}" />
+        <style>
+            table {
+            font-size: 0.85rem;
+            white-space: nowrap;
+            }
+            th, td {
+            text-align: center;
+            vertical-align: middle;
+            }
+            thead th {
+            background-color: #f1f1f1;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+            }
+            .table-container {
+            overflow-x: auto;
+            }
+            .status-cell {
+                border-radius: 20px;
+                padding: 2px 4px;
+                font-size: 12px;
+                border: none;
+                display: inline-block;
+                width: 80px;
+                text-align: center;
+              }
+              
+              .status-accounted {
+                background-color: #a9a9a9;
+                color: black;
+              }
+              
+              .status-invoiced {
+                background-color: #3cb371;
+                color: black;
+              }
+              
+              .status-visited {
+                background-color: lightgreen;
+                color: black;
+              }
+              td.alert-late {
+                background-color: red !important;
+                color: white !important;
+              }
+        </style>
+    </head>
+    <body>
+        <div class="container-fluid p-2">
+        <h5 class="text-center mb-3">TimeManagement（閲覧専用）</h5>
+        <input type="date" id="selectedDate" class="form-control mb-3" value="{{ today|date:'Y-m-d' }}">
+        <div class="table-container">
+            <table class="table table-bordered table-sm">
+            <thead>
+                <tr>
+                <th></th>
+                <th>プラン名</th>
+                <th>卓番</th>
+                <th>名数</th>
+                <th>開始時間</th>
+                <th>ラスト</th>
+                <th>退席時間</th>
+                <th>ステータス</th>
+                </tr>
+            </thead>
+            <tbody id="recordTableBody"></tbody>
+            </table>
+        </div>
+        </div>
+
+        <!-- Flatpickr & fetch script -->
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script>
+        flatpickr("#selectedDate", {
+            dateFormat: "Y-m-d",
+            defaultDate: "{{ today|date:'Y-m-d' }}"
+        });
+
+        async function loadRecords() {
+            const date = document.getElementById("selectedDate").value;
+            const res = await fetch(`/TimeManagement/table-data-api/?selected_date=${date}`);
+            const data = await res.json();
+            const tbody = document.getElementById("recordTableBody");
+            tbody.innerHTML = "";
+
+            for (const record of data) {
+                const isEmpty =
+                  !record.plan_name &&
+                  !record.table_number &&
+                  !record.people_count &&
+                  !record.start_time &&
+                  !record.end_time &&
+                  !record.stay &&
+                  !record.extensions &&
+                  !record.water_time &&
+                  !record.out_time;
+              
+                if (isEmpty) continue;
+              
+                let last = "", leave = "";
+                if (["レモン"].includes(record.plan_name)) {
+                    last = record.end_time || "";
+                    leave = record.out_time || "";
+                } else if (["食べ飲み90m", "食べ飲み120m", "スーパー"].includes(record.plan_name)) {
+                    last = (record.stay || "").replace(/[^\d:]/g, "");
+                    leave = (record.extensions || "").replace(/[^\d:]/g, "");
+                }
+
+                let status = "", statusClass = "";
+                if (record.paymentChecked) {
+                    status = "会計済み";
+                    statusClass = "status-accounted";
+                } else if (record.invoiceChecked) {
+                    status = "お食事済み";
+                    statusClass = "status-invoiced";
+                } else if (record.start_time) {
+                    status = "ご来店";
+                    statusClass = "status-visited";
+                }
+
+                // チェック状態を数値として取得
+                const invoiceChecked = record.invoiceChecked === true;
+                const paymentChecked = record.paymentChecked === true;
+
+                const row = `
+                <tr class="${statusClass}">
+                    <td>${record.row_number}</td>
+                    <td>${record.plan_name || ""}</td>
+                    <td>${record.table_number || ""}</td>
+                    <td>${record.people_count || ""}</td>
+                    <td>${formatHHMM(record.start_time)}</td>
+                    <td>${last}</td>
+                    <td>${leave}</td>
+                    <td><span class="status-cell ${statusClass}">${status}</span></td>
+                </tr>
+                `;
+                const temp = document.createElement('tbody');
+                temp.innerHTML = row.trim();
+                const rowElem = temp.firstElementChild;
+
+                applyLateAlert(rowElem, last, leave, invoiceChecked, paymentChecked);
+                
+                if (paymentChecked) {
+                    rowElem.querySelectorAll("td").forEach((td, index) => {
+                        if (index === 0) return; // 1列目スキップ
+                        td.style.backgroundColor = "#a9a9a9";
+                        td.style.color = "black";
+                    });
+                }
+                // ピンク（お食事済み）
+                else if (invoiceChecked) {
+                    rowElem.querySelectorAll("td").forEach((td, index) => {
+                        if (index === 0) return; // 1列目スキップ
+                        td.style.backgroundColor = "#ffc0cb";
+                        td.style.color = "black";
+                    });
+                }
+                tbody.appendChild(rowElem);
+
+            }
+
+            
+            if (tbody.innerHTML.trim() === "") {
+            tbody.innerHTML = `<tr><td colspan="11">表示するデータがありません</td></tr>`;
+            }
+        }
+
+
+        function formatHHMM(value) {
+            const raw = String(value || "").trim();
+            if (/^\d{4}$/.test(raw)) {
+                const hours = raw.slice(0, 2);
+                const minutes = raw.slice(2, 4);
+                return `${hours}:${minutes}`;
+            }
+            return raw;
+        }
+
+
+        // ラスト時間アラート用の関数
+        function applyLateAlert(rowElem, lastTimeRaw, leaveTimeRaw, invoiceChecked, paymentChecked) {
+            // 退席時間アラート
+            if (leaveTimeRaw) {
+                const cleanLeave = leaveTimeRaw.replace(/[^\d:]/g, "");
+                const leaveParts = cleanLeave.split(":");
+                if (leaveParts.length === 2) {
+                    const leaveHour = parseInt(leaveParts[0], 10);
+                    const leaveMin = parseInt(leaveParts[1], 10);
+        
+                    const now = new Date();
+                    const nowHour = now.getHours();
+                    const nowMin = now.getMinutes();
+        
+                    const isLeaveLate = nowHour > leaveHour || (nowHour === leaveHour && nowMin >= leaveMin);
+                    const leaveTd = rowElem.querySelector("td:nth-child(7)");
+        
+                    if (isLeaveLate && !paymentChecked && leaveTd) {
+                        leaveTd.classList.add("alert-late");
+                    }
+                }
+            }
+
+
+            if (paymentChecked) return;
+        
+            const cleanTime = lastTimeRaw.replace(/[^\d:]/g, "");
+            const parts = cleanTime.split(":");
+            if (parts.length < 2) return;
+        
+            const targetHour = parseInt(parts[0], 10);
+            const targetMin = parseInt(parts[1], 10);
+        
+            const now = new Date();
+            const nowHour = now.getHours();
+            const nowMin = now.getMinutes();
+        
+            const isLate = nowHour > targetHour || (nowHour === targetHour && nowMin >= targetMin);
+        
+            const lastTd = rowElem.querySelector("td:nth-child(6)"); // ← これが確実
+            if (isLate && !invoiceChecked && lastTd) {
+                lastTd.classList.add("alert-late");
+            }
+        }
+     
+        document.addEventListener("DOMContentLoaded", loadRecords);
+        document.getElementById("selectedDate").addEventListener("change", loadRecords);
+        </script>
+    </body>
+</html>
