@@ -40,6 +40,10 @@ def index(request):
     return render(request, 'EatryHub/index.html')
 
 @login_required
+def mobile_view(request):
+    return render(request, 'mobile/mobile.html')  # モバイルビュー
+
+@login_required
 def home(request):
     user_store = request.user.store
     if user_store is None:
