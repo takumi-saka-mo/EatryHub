@@ -8,14 +8,19 @@
       "type": "image/x-icon"
     },
     {
+      "src": "/static/mobile/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
       "src": "/static/mobile/icon.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
     }
   ],
-  "start_url": "/static/mobile/index.html",
-  "scope": "/static/mobile/",
+  "start_url": "/EatryHub/mobile/",
+  "scope": "/EatryHub/mobile/",
   "display": "standalone",
   "theme_color": "#ffffff",
   "background_color": "#ffffff"
