@@ -225,6 +225,8 @@
             },
             success: function(response){
                 if(response.success){
+                    const selectedDate = $("#selected_date").val();
+                    fetchTableData(selectedDate);
                 // プラン名の場合は<select>の値のみ更新
                 if(response.updated_cells["1"] !== undefined){
                     const $select = $(`td[data-row="${row}"][data-col="1"] select`);
@@ -240,6 +242,7 @@
                 } else {
                 alert("セルのアップデートに失敗しました.");
                 }
+                
             },
             error: function(xhr, status, error){
                 console.error("AJAX error:", error, xhr.responseText);
@@ -612,8 +615,10 @@
                         document.querySelector(`td[data-row="${row}"][data-col="8"]`).textContent = record.water_time || "";
                     if (record.out_time !== undefined)
                         document.querySelector(`td[data-row="${row}"][data-col="10"]`).textContent = record.out_time || "";
-                    loadRecords();
+                    
+                    updateRowCombined(row);
                 });
+                loadRecords();
             });
     }
     
