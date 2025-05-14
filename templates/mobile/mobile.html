@@ -83,7 +83,7 @@
             </ion-toolbar>
           </ion-header>
           <ion-content class="ion-padding">
-            <p>ここはホームタブです。</p>
+            <p>ホームタブ</p>
             <ion-checkbox label-placement="start">Label at the Start</ion-checkbox>
           </ion-content>
         </ion-content>
@@ -198,8 +198,9 @@
           last = formatHHMM(record.end_time);
           leave = formatHHMM(record.out_time);
         } else if (["食べ飲み90m", "食べ飲み120m", "スーパー"].includes(record.plan_name)) {
-          last = formatHHMM(record.stay);
-          leave = formatHHMM(record.extensions);
+          // 先に文字をクリーンアップしてから formatHHMM に渡す
+          last = formatHHMM(record.stay?.replace(/【[^】]*】/g, ""));
+          leave = formatHHMM(record.extensions?.replace(/【[^】]*】/g, ""));
         }
   
         const tr = document.createElement("tr");
