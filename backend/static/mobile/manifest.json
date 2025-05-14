@@ -1,20 +1,21 @@
 {
-  "short_name": "Ionic App",
-  "name": "My Ionic App",
+  "short_name": "EatryHub",
+  "name": "EatryHub モバイル",
   "icons": [
     {
-      "src": "assets/icon/favicon.ico",
+      "src": "/static/mobile/favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
     },
     {
-      "src": "assets/icon/icon.png",
+      "src": "/static/mobile/icon.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/static/mobile/index.html",
+  "scope": "/static/mobile/",
   "display": "standalone",
   "theme_color": "#ffffff",
   "background_color": "#ffffff"
