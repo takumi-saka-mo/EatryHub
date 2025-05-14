@@ -67,7 +67,10 @@ def table_view(request):
             if record.start_time:  # ★water_time生成に必要なstart_timeがあるなら
                 save_fields.append('water_time')
             record.save(update_fields=save_fields)
-            record.calculated_water_time = TimeManagementProcessor.calculate_water(record.start_time, override_level=record.water_override)
+            record.water_time = TimeManagementProcessor.calculate_water(record.start_time, override_level=record.water_override)
+            record.calculated_water_time = record.water_time
+            save_fields.append('water_time')  # ← これがsaveより前
+            record.save(update_fields=save_fields)  # ← これがsaveより後
 
     record_dict = {r.row_number: r for r in records}
     return render(request, 'TimeManagement/table.html', {
@@ -511,6 +514,14 @@ def update_cell(request):
                     record.people_count = None
             elif col_number == 4:
                 record.start_time = value
+                if not value:
+                    record.stay = ""
+                    record.extensions = ""
+                    record.water_time = ""
+                    if record.plan_name != "単品":
+                        record.out_time = ""
+                else:
+                    save_fields = ['start_time']
             elif col_number == 5:
                 record.end_time = value
             elif col_number == 6:
