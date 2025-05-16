@@ -188,6 +188,13 @@
   </ion-app>
 
   <script>
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        const splash = document.getElementById("custom-splash");
+        if (splash) splash.style.display = "none";
+      }, 2000); // スプラッシュの自動表示のため
+    });
+
     function formatHHMM(value) {
       const raw = String(value || "").trim();
       if (/^\d{4}$/.test(raw)) {
