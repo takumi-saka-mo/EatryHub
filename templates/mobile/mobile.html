@@ -136,9 +136,12 @@
               <ion-title>カード表示</ion-title>
             </ion-toolbar>
           </ion-header>
-          <ion-content class="ion-padding">
-            <div id="card-container">Loading...</div>
-          </ion-content>
+      
+          <div class="ion-padding">
+            <input type="date" id="cardSelectedDate" class="form-control mb-2" />
+          </div>
+      
+          <div id="card-container" class="ion-padding"></div>
         </ion-content>
       </ion-tab>
 
@@ -252,7 +255,8 @@
           last = formatHHMM(record.stay?.replace(/【[^】]*】/g, ""));
           leave = formatHHMM(record.extensions?.replace(/【[^】]*】/g, ""));
         }
-  
+
+        
         const tr = document.createElement("tr");
 
         // 背景色指定：会計済み → 灰色、請求済み → ピンク
@@ -289,7 +293,60 @@
         tbody.innerHTML = `<tr><td colspan="7">データがありません</td></tr>`;
       }
     }
+    async function fetchCardData() {
+      const date = document.getElementById("cardSelectedDate").value || new Date().toISOString().slice(0, 10);
+      const res = await fetch(`/TimeManagement/table-data-api/?selected_date=${date}`);
+      const data = await res.json();
+      const container = document.getElementById("card-container");
+      container.innerHTML = "";
   
+      data.forEach(record => {
+        if (!record.plan_name && !record.table_number && !record.people_count && !record.start_time) return;
+  
+        let last = "", leave = "";
+        if (["レモン"].includes(record.plan_name)) {
+          last = formatHHMM(record.end_time);
+          leave = formatHHMM(record.out_time);
+        } else if (["食べ飲み90m", "食べ飲み120m", "スーパー"].includes(record.plan_name)) {
+          last = formatHHMM(record.stay?.replace(/【[^】]*】/g, ""));
+          leave = formatHHMM(record.extensions?.replace(/【[^】]*】/g, ""));
+        }
+  
+        const card = document.createElement("div");
+        card.className = `card-entry plan-${record.plan_name || ""}`;
+  
+        // 背景色：会計済み → 灰色、請求済み → ピンク
+        if (record.paymentChecked) {
+          card.style.backgroundColor = "#a9a9a9";
+          card.style.color = "black";
+        } else if (record.invoiceChecked) {
+          card.style.backgroundColor = "#ffc0cb";
+          card.style.color = "black";
+        }
+  
+        card.innerHTML = `
+          <h5><b>${record.table_number || "-"}</b></h5>
+          <p><b>${record.plan_name || "-"}</b></p>
+          <p><strong>人数:</strong> ${record.people_count || "-"}</p>
+          <p><strong>開始:</strong> ${formatHHMM(record.start_time)}</p>
+          <p><strong>ラスト:</strong> ${last}</p>
+          <p><strong>アウト:</strong> ${leave}</p>
+        `;
+  
+        container.appendChild(card);
+      });
+  
+      if (container.innerHTML.trim() === "") {
+        container.innerHTML = `<p>データがありません</p>`;
+      }
+    }
+    
+      document.addEventListener("DOMContentLoaded", () => {
+        const cardDateInput = document.getElementById("cardSelectedDate");
+        cardDateInput.value = new Date().toISOString().slice(0, 10);
+        fetchCardData();
+        cardDateInput.addEventListener("change", fetchCardData);
+      });
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("selectedDate").value = new Date().toISOString().slice(0, 10);
       fetchData();
