@@ -137,7 +137,7 @@
             </ion-toolbar>
           </ion-header>
 
-          <ion-refresher id="refresher" slot="fixed">
+          <ion-refresher id="card-refresher" slot="fixed">
             <ion-refresher-content
               pulling-icon="chevron-down-circle-outline"
               pulling-text="Pull to refresh"
@@ -350,12 +350,12 @@
       }
     }
     
-      document.addEventListener("DOMContentLoaded", () => {
-        const cardDateInput = document.getElementById("cardSelectedDate");
-        cardDateInput.value = new Date().toISOString().slice(0, 10);
-        fetchCardData();
-        cardDateInput.addEventListener("change", fetchCardData);
-      });
+    document.addEventListener("DOMContentLoaded", () => {
+      const cardDateInput = document.getElementById("cardSelectedDate");
+      cardDateInput.value = new Date().toISOString().slice(0, 10);
+      fetchCardData();
+      cardDateInput.addEventListener("change", fetchCardData);
+    });
     document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("selectedDate").value = new Date().toISOString().slice(0, 10);
       fetchData();
@@ -378,6 +378,16 @@
           refresher.complete();
         });
       });
+    });
+    document.addEventListener("DOMContentLoaded", () => {
+      const cardRefresher = document.getElementById("card-refresher");
+      if (cardRefresher) {
+        cardRefresher.addEventListener("ionRefresh", () => {
+          fetchCardData().finally(() => {
+            cardRefresher.complete();
+          });
+        });
+      }
     });
   </script>
 </body>
