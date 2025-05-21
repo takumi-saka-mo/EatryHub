@@ -5,7 +5,7 @@
   media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)">
   <meta charset="utf-8" />
   <title>EatryHub - Mobile</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
   <link rel="apple-touch-icon" href="/static/mobile/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -34,6 +34,14 @@
       --ion-background-color: #e6e6e6;
       --ion-background-color-contrast: #fff;}
     
+    ion-tab-bar {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+
+    ion-content {
+      padding-bottom: calc(65px + env(safe-area-inset-bottom));
+    }
     .card-entry {
       margin: 10px;
       padding: 10px;
@@ -69,6 +77,23 @@
     .alert-late {
       background-color: red !important;
       color: white !important;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    
+    ion-tab-bar {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    ion-content {
+      padding-bottom: calc(65px + env(safe-area-inset-bottom));
+    }
+    
+    .table-container {
+      padding-bottom: env(safe-area-inset-bottom);
     }
   </style>
 </head>
