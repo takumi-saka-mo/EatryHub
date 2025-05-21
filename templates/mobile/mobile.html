@@ -126,6 +126,17 @@
               <ion-title>テーブル表示</ion-title>
             </ion-toolbar>
           </ion-header>
+          
+          <!-- リロード機能 -->
+          <ion-refresher id="refresher" slot="fixed">
+            <ion-refresher-content
+              pulling-icon="chevron-down-circle-outline"
+              pulling-text="下に引いて更新"
+              refreshing-spinner="circles"
+              refreshing-text="更新中...">
+            </ion-refresher-content>
+          </ion-refresher>
+      
           <ion-content class="ion-padding">
             <input type="date" id="selectedDate" class="form-control" />
             <div class="table-container mb-5">
@@ -263,6 +274,23 @@
       fetchData();
       setInterval(fetchData, 60000);
       document.getElementById("selectedDate").addEventListener("change", fetchData);
+    });
+    document.addEventListener("DOMContentLoaded", () => {
+      const dateInput = document.getElementById("selectedDate");
+      const refresher = document.getElementById("refresher");
+  
+      dateInput.value = new Date().toISOString().slice(0, 10);
+      fetchData();
+      setInterval(fetchData, 60000);
+  
+      dateInput.addEventListener("change", fetchData);
+  
+      // Refresh
+      refresher.addEventListener('ionRefresh', (event) => {
+        fetchData().finally(() => {
+          refresher.complete();
+        });
+      });
     });
   </script>
 </body>
