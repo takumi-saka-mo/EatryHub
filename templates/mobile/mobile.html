@@ -136,6 +136,15 @@
               <ion-title>カード表示</ion-title>
             </ion-toolbar>
           </ion-header>
+
+          <ion-refresher id="refresher" slot="fixed">
+            <ion-refresher-content
+              pulling-icon="chevron-down-circle-outline"
+              pulling-text="Pull to refresh"
+              refreshing-spinner="circles"
+              refreshing-text="更新中...">
+            </ion-refresher-content>
+          </ion-refresher>
       
           <div class="ion-padding">
             <input type="date" id="cardSelectedDate" class="form-control mb-2" />
