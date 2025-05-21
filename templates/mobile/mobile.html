@@ -166,9 +166,8 @@
               <table>
                 <thead>
                   <tr>
-                    <th>#</th>
-                    <th>プラン</th>
                     <th>卓番</th>
+                    <th>プラン</th>
                     <th>人数</th>
                     <th>開始</th>
                     <th>ラスト</th>
@@ -265,9 +264,8 @@
           tr.style.color = "black";
         }
         tr.innerHTML = `
-          <td>${record.row_number || ""}</td>
-          <td>${record.plan_name || ""}</td>
           <td>${record.table_number || ""}</td>
+          <td>${record.plan_name || ""}</td>
           <td>${record.people_count || ""}</td>
           <td>${formatHHMM(record.start_time)}</td>
           <td>${last}</td>
