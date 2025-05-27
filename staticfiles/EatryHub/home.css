@@ -1,0 +1,81 @@
+.navbar-custom {
+    min-height: 80px;                       /* 最低高さを80pxに */
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-family: "Sora", sans-serif!important;
+}
+
+.navbar-brand {
+    font-size: 30px !important;
+}
+
+.custom-card {
+    height: 500px;
+  }
+
+ul li a[target="_blank"]::after {
+content: '\f08e';
+font-family: FontAwesome; /* font-awesomeを使うための呪文 */
+margin-left: 0.5em;
+}
+
+
+/* ガントチャート*/
+.card-body.p-0 {
+    height: 100%;
+}
+
+#gantt_here {
+    width: 100%; height: 100%;
+}
+
+
+#gantt {
+    border: 1px solid #ccc;
+    font-family: sans-serif;
+}
+
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+
+.task {
+    fill: #69b3a2;
+}
+.task-label {
+    fill: white;
+    font-size: 12px;
+    pointer-events: none;
+}
+
+
+
+/* 現在時刻マーカーの縦線を赤く */
+.gantt_marker.today_marker.gantt_marker_line {
+    border-left: 2px solid red !important;
+}
+
+
+.gantt_task_content {
+    background-color: #32cd32 !important;
+}
+
+.light_green .gantt_task_content {
+    background-color: #32cd32 !important;
+    border-radius: 4px;
+}
+
+.geep_green .gantt_task_content {
+    background-color: #3cb371 !important;
+    border-radius: 4px;
+}
+
+.gray .gantt_task_content {
+    background-color: #a9a9a9 !important;
+    border-radius: 4px;
+}

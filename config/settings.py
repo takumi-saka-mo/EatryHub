@@ -35,6 +35,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 # Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -183,3 +184,15 @@ FILES_CHARSET = 'utf-8'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Jazzmin 管理画面カスタマイズ
+JAZZMIN_SETTINGS = {
+    "site_title": "EatryHub 管理画面",
+    "site_header": "EatryHub",
+    "site_logo": "favicon.ico",
+    "site_logo_classes": "img-responsive",
+
+    "welcome_sign": "ようこそ EatryHub 管理画面へ",
+    "copyright": "© EatryHub",
+}

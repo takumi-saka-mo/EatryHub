@@ -1,0 +1,159 @@
+/* Google Fontsからのインポート */
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap');
+
+:root{
+    --primary: #0d6efd;
+    --dark: #21252f;
+    --body: #888;
+    --box-shadow: 0 8px 22px rgba(0, 0, 0, 0.2);
+}
+
+
+body {
+  font-family: "Sora", serif; /* Google Font の"Sora"フォント */
+  font-optical-sizing: auto;
+  font-style: normal;
+  line-height: 1.7; /* 行の高さ */
+  color: var(--body); /* var()メソッド; rootで指定したbodyのカラーを継承 */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.display-1 {
+    color: var(--dark);
+    font-weight: 700;
+}
+
+a {
+    color: var(--dark);
+    text-decoration: none;
+}
+
+section {
+    padding-top: 120px;
+    padding-bottom: 120px;
+}
+
+
+/* ナビゲーションバー内のリンクの色を白色に設定 */
+.navbar-nav .nav-link{
+    color: #fff !important;/* Bootstrapのデフォルトスタイルを上書きするために !important を使用 */
+    font-size: 14px;
+    font-weight: 700;
+    padding: 16px;
+}
+
+.btn {
+    padding: 14px 18px;
+    border-width: 2px;
+    border-radius: 0%;
+}
+
+.hero {
+    background-position: center;
+    background-size: cover;
+    background-attachment: fixed;
+    position: relative;
+    z-index: 2;
+}
+
+.hero::after {
+    content: ""; /* 疑似要素では必須のテンプレ */
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-color: rgba(37, 39, 71, 0.2);
+    z-index: -1;
+}
+
+.card-effect {
+    box-shadow: var(--box-shadow);
+    background-color: #fff;
+    padding: 25px;
+    transition: all 0.35s ease;
+}
+
+.card-effect:hover {
+    box-shadow: none;
+    transform: translateY(5px); /* ホバー時に5px下がる */
+}
+
+.iconbox {
+    width: 54px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 35px;
+    border-radius: 100px;
+    background-color: var(--primary);
+}
+
+.service {
+    position: relative;
+    overflow: hidden;
+    
+
+}
+
+.service::after {
+    content: "";
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background-color: var(--primary);
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: all 0.75s ease;
+    z-index: -1;
+}
+
+.service:hover h5,
+service:hover p {
+    color: white;
+}
+
+.service:hover .iconbox {
+    background-color: #fff;
+    color: var(--primary);
+}
+
+.service:hover::after {
+    opacity: 1;
+    top: 0;
+}
+
+/* form section */
+form input.form-control {
+    height: 56px;
+
+}
+
+form .form-control {
+    border: transparent;
+    border-radius: 0;
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.footer-top {
+    background: var(--dark);
+    padding: 90px;
+    padding-bottom: 90px;
+}
+
+.footer-top a {
+    color: var(--body);
+}
+
+.footer-top a:hover {
+    color: #fff;
+    
+}
