@@ -7,3 +7,4 @@ templates/**/*.html linguist-vendored=true
 static/**.css linguist-vendored=true
 static/**.html linguist-vendored=true
 staticfiles/** linguist-vendored=true
+EatryHub/data.ipynb linguist-vendored=true
