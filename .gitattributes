@@ -3,4 +3,5 @@ static/**/*.css    linguist-vendored=true
 staticfiles    linguist-vendored=true
 templates/**.html linguist-vendored=true
 static/**.css linguist-vendored=true
+static/**.html linguist-vendored=true
 staticfiles/** linguist-vendored=true
