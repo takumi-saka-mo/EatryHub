@@ -1,10 +1,11 @@
 {% extends "admin/base.html" %}
+{% load static %}
 
 {% block user_tools %}
   {{ block.super }}
-  <li>
-    <a href="/EatryHub/home/" style="padding-left: 10px;">
-      <i class="fas fa-home"></i> ホームに戻る
+  <li class="nav-item">
+    <a class="nav-link" href="/EatryHub/home/">
+      <i class="fas fa-home"></i> ホームへ戻る
     </a>
   </li>
 {% endblock %}

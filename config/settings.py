@@ -188,11 +188,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Jazzmin 管理画面カスタマイズ
 JAZZMIN_SETTINGS = {
+    "topmenu_links": [
+        {"name": "ホームへ戻る", "url": "/EatryHub/home/", "new_window": False},
+    ],
     "site_title": "EatryHub 管理画面",
     "site_header": "EatryHub",
     "site_logo": "favicon.ico",
     "site_logo_classes": "img-responsive",
-
+    "custom_css": "EatryHub/home.css",
     "welcome_sign": "ようこそ EatryHub 管理画面へ",
     "copyright": "© EatryHub",
 }

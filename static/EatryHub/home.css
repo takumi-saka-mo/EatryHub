@@ -79,3 +79,14 @@ margin-left: 0.5em;
     background-color: #a9a9a9 !important;
     border-radius: 4px;
 }
+
+
+/* 管理画面 */
+body {
+  font-size: 18px;
+}
+
+.table td, .table th {
+  font-size: 15px;
+}
+
