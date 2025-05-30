@@ -21,9 +21,11 @@ def table_view(request):
     except (ValueError, AttributeError):
         selected_date = date.today()
 
-    records = TimeManagementRecord.objects.filter(date=selected_date)
-    records = TimeManagementRecord.objects.filter(date=selected_date, store=request.user.store)
-    
+
+    records = TimeManagementRecord.objects.filter(
+        date=selected_date,
+        store=request.user.store,
+    )    
 
     for record in records:
         record.calculated_col6 = record.calculated_col7 = record.calculated_col10 = ""
@@ -51,8 +53,6 @@ def table_view(request):
 
                 record.calculated_col6 = lo
                 record.calculated_col7 = out
-
-                # **DBにも保存** so reload retains
                 record.stay = lo
                 record.extensions = out
                 record.out_time = ""
@@ -64,13 +64,13 @@ def table_view(request):
             save_fields = ['stay', 'extensions']
             if record.plan_name != "単品":  # ★「単品以外」ならout_timeも保存
                 save_fields.append('out_time')
-            if record.start_time:  # ★water_time生成に必要なstart_timeがあるなら
+            if record.start_time:  # start_timeが空出ない場合のみwater_timeを生成
                 save_fields.append('water_time')
             record.save(update_fields=save_fields)
             record.water_time = TimeManagementProcessor.calculate_water(record.start_time, override_level=record.water_override)
             record.calculated_water_time = record.water_time
-            save_fields.append('water_time')  # ← これがsaveより前
-            record.save(update_fields=save_fields)  # ← これがsaveより後
+            save_fields.append('water_time')
+            record.save(update_fields=save_fields)
 
     record_dict = {r.row_number: r for r in records}
     return render(request, 'TimeManagement/table.html', {
@@ -84,26 +84,112 @@ def table_view(request):
 
 @login_required
 def table_data_api(request):
+    from django.utils import timezone
     selected_date_str = request.GET.get('selected_date')
     try:
         selected_date = datetime.strptime(selected_date_str, '%Y-%m-%d').date()
     except (ValueError, TypeError):
         selected_date = date.today()
     try:
-        records = TimeManagementRecord.objects.filter(
+        records_qs = TimeManagementRecord.objects.filter(
             date=selected_date, store=request.user.store
-        ).values(
-            'row_number', 'plan_name', 'start_time', 'end_time',
-            'stay', 'extensions', 'out_time', 'water_time',
-            'people_count', 'table_number', 'invoiceChecked', 'paymentChecked'
         )
-        return JsonResponse(list(records), safe=False)
+        records = []
+        for r in records_qs:
+            plan = r.plan_name
+            start = r.start_time
+            end = r.end_time
+            people = r.people_count
+            end_time = r.end_time
+            out_time = r.out_time
+            stay = r.stay
+            extensions = r.extensions
+
+            # start_timeをhh:mm表記に
+            def to_hhmm(val):
+                """
+                start_time(int4桁)をhh:mm表記に変換する関数
+                [In]  1200
+                [Out] 12:00
+                """
+                
+                if not val or not str(val).isdigit():
+                    return ""
+                val = int(val)
+                h = val // 100
+                m = val % 100
+                return f"{h:02d}:{m:02d}"
+
+            start_time_disp = to_hhmm(start)
+
+            if start:
+                if plan == "レモン" and end:
+                    stay = TimeManagementProcessor.calculate_time_diff(start, end)
+                    extensions = TimeManagementProcessor.calculate_count(stay, str(people or 0))
+                    out_time = TimeManagementProcessor.calculate_seat_limit(end, plan)
+                    end_time_disp = to_hhmm(end)
+                elif plan in ["食べ飲み90m", "食べ飲み120m", "スーパー"]:
+                    lo = TimeManagementProcessor.calculate_LO(start, plan)
+                    out = TimeManagementProcessor.calculate_OUT(start, plan)
+                    if isinstance(lo, str) and lo.startswith("【ラスト】"):
+                        end_time = lo.replace("【ラスト】", "")
+                    else:
+                        end_time = ""
+                    if isinstance(out, str) and out.startswith("【アウト】"):
+                        out_time = out.replace("【アウト】", "")
+                    else:
+                        out_time = ""
+                    stay = None
+                    extensions = None
+                    end_time_disp = end_time
+                else:
+                    end_time_disp = to_hhmm(end)
+            else:
+                end_time_disp = to_hhmm(end)
+
+            # extensions: 空あるいはNoneであればNullを返す
+            ext_val = None
+            if extensions not in ("", None):
+                try:
+                    ext_val = int(extensions)
+                except Exception:
+                    ext_val = extensions
+
+            records.append({
+                "row_number": r.row_number,
+                "table_number": r.table_number,
+                "people_count": r.people_count,
+                "plan_name": r.plan_name,
+                "start_time": start_time_disp,
+                "end_time": end_time_disp or "",
+                "stay": stay,
+                "extensions": ext_val,
+                "out_time": out_time or "",
+                "status": getattr(r, "status", ""),  # 【修正予定】現在 : 空であれば""を返す → 予定 : 正しくstatusをjsonで表示
+                "checked": {
+                    "invoiceChecked": bool(getattr(r, "invoiceChecked", False)),
+                    "paymentChecked": bool(getattr(r, "paymentChecked", False)),
+                }
+            })
+        from pytz import timezone as pytz_timezone
+        jst = pytz_timezone('Asia/Tokyo')
+        response = {
+            "store": str(request.user.store),
+            "date": selected_date.strftime('%Y-%m-%d'), # 年, 月, 日のみselected_dateから取得
+            "generated_at": timezone.localtime(timezone.now(), jst).isoformat(),
+            "record_count": len(records),
+            "records": records
+        }
+        return JsonResponse(response, safe=False)
     except Exception as e:
-        print("APIエラー発生")
+        print("API取得時にエラーが発生しました", e)
         return JsonResponse({'error': 'Internal Server Error'}, status=500)
 
 @login_required
 def mobile_view(request):
+    """
+    TimeManagementモバイルPWA用レンダリング関数
+    """
     return render(request, 'TimeManagement/mobile_view.html')
 
 # viewsのメイン処理
@@ -112,7 +198,7 @@ class TimeManagementProcessor:
         self.row_id = row_id            # 更新行
         self.col_number = col_number    # 更新する列
         self.value = value              # セルの入力値
-        self.updated_cells = {}
+        self.updated_cells = {}         # 変更点を送信前に一時的に控えるため
 
     @staticmethod
     def calculate_time_diff(start_time, end_time):
@@ -284,7 +370,7 @@ class TimeManagementProcessor:
         if self.col_number == 1:
             plan_name = request.POST.get('plan_name', "")
             people_count = request.POST.get('people_count', "").strip()
-            start_time = request.POST.get('start_time', "")# .strip()  # 開始時間を取得
+            start_time = request.POST.get('start_time', "") # .strip()  # 開始時間を取得
             end_time = request.POST.get('end_time', "")
             water_override = request.POST.get('water_override', "0").lower()  # "0"がデフォルト
             if start_time.strip():
@@ -557,13 +643,13 @@ def update_cell(request):
         if '8' in updated_cells:
             record.water_time = updated_cells['8']
         if '10' in updated_cells:
-            if record.plan_name != "単品":  # ★単品なら out_time を上書き禁止
+            if record.plan_name != "単品":  # 単品の処理は修正予定
                 record.out_time = updated_cells['10']
         else:
-            if record.plan_name != "単品":  # ★単品なら out_time をクリアしない
+            if record.plan_name != "単品":  # ★同じく修正予定
                 record.out_time = "" if record.plan_name != "レモン" or not record.end_time else record.out_time
 
-        # ← これだけで stay, extensions, water_time, out_time をまとめて保存
+        # stay, extensions, water_time, out_time をまとめて保存
         record.save(update_fields=['stay', 'extensions', 'water_time', 'out_time'])
 
         return JsonResponse({'success': True, 'updated_cells': updated_cells})

@@ -291,64 +291,61 @@
             return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
         }
         // ガントチャートを更新する関数(メイン関数)
-        function fetchTasksAndUpdateGantt() {
-            const selectedDate = document.getElementById("dateInput").value;
-            // Ajaxリクエスト
-            fetch(window.location.pathname + "?selected_date=" + selectedDate, {
-                headers: { 'X-Requested-With': 'XMLHttpRequest' }
-            })
-            .then(response => response.json())
-            .then(newTasks => {
-                console.log("取得したテーブル状況:", newTasks);
-            
+        async function fetchTasksAndUpdateGantt() {
+            const selectedDate = document.getElementById("dateInput").value || new Date().toISOString().slice(0, 10);
+            try {
+                const res = await fetch(`/TimeManagement/table-data-api/?selected_date=${selectedDate}`);
+                if (!res.ok) throw new Error("API取得に失敗しました : " + res.status);
+                const apiData = await res.json();
+
                 gantt.clearAll();
-            
-                const selectedDate = document.getElementById("dateInput").value;
-            
-                // 正しいタスクだけフィルタ
-                const filteredTasks = newTasks.data.filter(task => {
-                    if (!task.table) return false; // 【空白行対策】昨日以前使用したテーブル番号が表示されてしまう不具合を修正
-                    const taskDate = task.start_date.slice(0, 10); // formatDateに対応する形式(10桁文字列)
-                    return taskDate === selectedDate;
-                });
-            
+
+                const filteredTasks = (apiData.records || []).filter(record => record.table_number);
+
                 if (filteredTasks.length === 0) {
-                    console.log(
-                        "該当データが見つかないめ, Noneを返します. (TimeManagementにデータがあれば, スクリプトの処理をチェックして下さい.)"
-                    );
-                    return;
+                    console.log("該当データが見つかないめ, Noneを返します. (TimeManagementにデータがあれば, スクリプトの処理をチェックして下さい.)");
+                    // チャートを消さずに何もせずreturn
+                    return false;
                 }
-                // 日付の範囲（最小開始時間・最大終了時間）を計算
-                const startDates = filteredTasks.map(task => new Date(task.start_date).getTime());
-                const endDates = filteredTasks.map(task => new Date(task.end_date).getTime());
+
+                function parseTime(dateStr, timeStr) {
+                    if (!dateStr || !timeStr || !/^\d{2}:\d{2}$/.test(timeStr)) return null;
+                    return dateStr + " " + timeStr;
+                }
+
+                const formattedTasks = filteredTasks.map(record => ({
+                    id: record.row_number,
+                    text: `${record.plan_name || ""}`,
+                    start_date: parseTime(apiData.date, record.start_time),
+                    end_date: parseTime(apiData.date, record.out_time),
+                    parent: 0,
+                    resource: record.table_number ? String(record.table_number) : "",
+                    status: record.checked && record.checked.paymentChecked ? 2
+                            : record.checked && record.checked.invoiceChecked ? 1
+                            : 0,
+                    table: record.table_number ? String(record.table_number) : ""
+                }));
+
+                const startDates = formattedTasks.map(task => new Date(task.start_date).getTime());
+                const endDates = formattedTasks.map(task => new Date(task.end_date).getTime());
                 const minStart = new Date(Math.min(...startDates));
                 const maxEnd = new Date(Math.max(...endDates));
-            
+
                 gantt.config.start_date = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate(), 0, 0);
                 gantt.config.end_date = new Date(maxEnd.getFullYear(), maxEnd.getMonth(), maxEnd.getDate(), 23, 59);
-                // 
-                const formattedTasks = filteredTasks.map(task => ({
-                    id: task.id,
-                    text: task.text,
-                    start_date: task.start_date,
-                    end_date: task.end_date,
-                    parent: 0,
-                    resource: task.resource || "",
-                    status: task.status || 0,
-                    table: task.table || ""
-                }));
-                // gantt再描画            
+
                 gantt.parse({ data: formattedTasks, links: [] });
-                // 時刻マーカ(現在時刻を赤線で表示)            
+
                 gantt.addMarker({
                     start_date: new Date(),
                     css: "today_marker",
                     title: "現在時刻: " + new Date().toLocaleTimeString()
                 });
-            })
-            .catch(error => {
+                return true;
+            } catch (error) {
                 console.error("エラー:", error);
-            });
+                return false;
+            }
         }
 
         document.addEventListener("DOMContentLoaded", function() {
@@ -356,20 +353,19 @@
                 dateFormat: "Y-m-d",
                 defaultDate: "today",
                 locale: "ja"
-                });
+            });
 
-            fetchTasksAndUpdateGantt(); // ページ開いたときに選択された日付だけロード
-
+            fetchTasksAndUpdateGantt();
 
             // 日付フォーマット
             gantt.config.xml_date = "%Y-%m-%d %H:%i";
             // 同テーブルは並列して描画
             gantt.config.group_tasks = true;
-            gantt.config.data_format = "json"; // json形式で受け取り
+            gantt.config.data_format = "json";
             gantt.config.data_property = "data";
             gantt.config.links_property = "links";
 
-            // それぞれのタスクを色分け
+            // それぞれのタスクを色分け(合計値計算)
             // Ex.) 会計済みチェック→グレー, 伝票のみチェック→濃緑, チェックなし→緑
             gantt.templates.task_class = (start,end,task) => {
                 if(task.status == 0) return "light_green"; // none
@@ -414,70 +410,14 @@
             });
 
             // 日付選択フォームにイベント登録
-            document.getElementById("dateForm").addEventListener("submit", function(event){
-                event.preventDefault(); // デフォルトの送信止める処理
-
-                const selectedDate = document.getElementById("dateInput").value;
-
-                fetch(window.location.pathname + "?selected_date=" + selectedDate, {
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                })
-                .then(response => response.json())
-                .then(newTasks => {
-                    console.log("取得したtasks:", newTasks);
-                
-                    gantt.clearAll();
-                
-                    const selectedDate = document.getElementById("dateInput").value;
-                
-                    // 上記同様に必要行のみ描画
-                    const filteredTasks = newTasks.data.filter(task => {
-                        if (!task.table) return false;
-                        const taskDate = task.start_date.slice(0, 10);
-                        return taskDate === selectedDate;
-                    });
-                
-                    if (filteredTasks.length === 0) {
-                        console.log(
-                            "該当データが見つかないめ, Noneを返します. (TimeManagementにデータがあれば, スクリプトの処理をチェックして下さい.)"
-                            );
-                        return;
-                    }
-
-                    // 範囲の初期設定
-                    const startDates = filteredTasks.map(task => new Date(task.start_date).getTime());
-                    const endDates = filteredTasks.map(task => new Date(task.end_date).getTime());
-                    const minStart = new Date(Math.min(...startDates));
-                    const maxEnd = new Date(Math.max(...endDates));
-                
-                    gantt.config.start_date = new Date(minStart.getFullYear(), minStart.getMonth(), minStart.getDate(), 0, 0);
-                    gantt.config.end_date = new Date(maxEnd.getFullYear(), maxEnd.getMonth(), maxEnd.getDate(), 23, 59);
-                
-                    const formattedTasks = filteredTasks.map(task => ({
-                        id: task.id,
-                        text: task.text,
-                        start_date: task.start_date,
-                        end_date: task.end_date,
-                        parent: 0,
-                        resource: task.resource || "",
-                        status: task.status || 0,
-                        table: task.table || ""
-                    }));
-                
-                    gantt.parse({ data: formattedTasks, links: [] });
-                
-                    gantt.addMarker({
-                        start_date: new Date(),
-                        css: "today_marker",
-                        title: "現在時刻: " + new Date().toLocaleTimeString()
-                    });
-                })
-                .catch(error => {
-                    console.error("Error: データ取得中にエラーが発生しました.", error);
-                });
-                fetchTasksAndUpdateGantt();
-                setInterval(fetchTasksAndUpdateGantt, 30000);
+            document.getElementById("dateForm").addEventListener("submit", async function(event){
+                event.preventDefault();
+                const result = await fetchTasksAndUpdateGantt();
+                // データがなかった場合はチャートをクリアしない
+                // 何もしないことで以前のチャートが残る
             });
+
+            setInterval(fetchTasksAndUpdateGantt, 30000);
         });
     </script>
     </body>

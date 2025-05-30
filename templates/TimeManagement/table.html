@@ -221,7 +221,7 @@
                 'start_time': start_time,
                 'end_time': end_time,
                 'water_override': water_override,
-                'selected_date': selected_date // 日付の値も更新
+                'selected_date': selected_date
 
             },
             success: function(response){
@@ -244,7 +244,7 @@
             },
             error: function(xhr, status, error){
                 console.error("AJAX error:", error, xhr.responseText);
-                alert("Ajax(非同期通信処理)に失敗しました.");
+                alert("Ajax(非同期通信処理)に失敗しました.\n[回復手順] \n1. ページをリロード(Ctrl+R)\n2.データの重複を削除\n管理画面→Time management records\n→削除したい行番号のレコードをチェック\n→オプションプルダウン→選択されたレコードの削除→実行\n回復作業終了後再度リロードしてください");
             }
             });
         }

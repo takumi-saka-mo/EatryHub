@@ -228,9 +228,12 @@
       if (/^\d{4}$/.test(raw)) {
         return `${raw.slice(0, 2)}:${raw.slice(2)}`;
       }
+      if (/^\d{2}:\d{2}$/.test(raw)) {
+        return raw;
+      }
       return raw || "-";
     }
-  
+
     function getTimeFromHHMM(str) {
       const raw = String(str || "").replace(/[^\d:]/g, "");
       const parts = raw.split(":");
@@ -239,40 +242,38 @@
       d.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10), 0, 0);
       return d;
     }
-  
+
     function isPast(timeStr) {
       const t = getTimeFromHHMM(formatHHMM(timeStr));
       return t ? t < new Date() : false;
     }
-  
+
     async function fetchData() {
       const date = document.getElementById("selectedDate").value || new Date().toISOString().slice(0, 10);
       const res = await fetch(`/TimeManagement/table-data-api/?selected_date=${date}`);
       const data = await res.json();
       const tbody = document.getElementById("table-body");
       tbody.innerHTML = "";
-  
-      data.forEach(record => {
+
+      (data.records || []).forEach(record => {
         if (!record.plan_name && !record.table_number && !record.people_count && !record.start_time) return;
-  
+
         let last = "", leave = "";
         if (["レモン"].includes(record.plan_name)) {
           last = formatHHMM(record.end_time);
           leave = formatHHMM(record.out_time);
         } else if (["食べ飲み90m", "食べ飲み120m", "スーパー"].includes(record.plan_name)) {
-          // 先に文字をクリーンアップしてから formatHHMM に渡す
-          last = formatHHMM(record.stay?.replace(/【[^】]*】/g, ""));
-          leave = formatHHMM(record.extensions?.replace(/【[^】]*】/g, ""));
+          last = formatHHMM(record.end_time);
+          leave = formatHHMM(record.out_time);
         }
 
-        
         const tr = document.createElement("tr");
 
         // 背景色指定：会計済み → 灰色、請求済み → ピンク
-        if (record.paymentChecked) {
+        if (record.checked && record.checked.paymentChecked) {
           tr.style.backgroundColor = "#a9a9a9";
           tr.style.color = "black";
-        } else if (record.invoiceChecked) {
+        } else if (record.checked && record.checked.invoiceChecked) {
           tr.style.backgroundColor = "#ffc0cb";
           tr.style.color = "black";
         }
@@ -284,55 +285,56 @@
           <td>${last}</td>
           <td>${leave}</td>
         `;
-  
+
         const lastTd = tr.children[4];
         const leaveTd = tr.children[5];
-  
-        if (isPast(last) && !record.invoiceChecked) {
+
+        if (isPast(last) && !(record.checked && record.checked.invoiceChecked)) {
           lastTd.classList.add("alert-late");
         }
-        if (isPast(leave) && !record.paymentChecked) {
+        if (isPast(leave) && !(record.checked && record.checked.paymentChecked)) {
           leaveTd.classList.add("alert-late");
         }
-  
+
         tbody.appendChild(tr);
       });
-  
+
       if (tbody.innerHTML.trim() === "") {
         tbody.innerHTML = `<tr><td colspan="7">データがありません</td></tr>`;
       }
     }
+
     async function fetchCardData() {
       const date = document.getElementById("cardSelectedDate").value || new Date().toISOString().slice(0, 10);
       const res = await fetch(`/TimeManagement/table-data-api/?selected_date=${date}`);
       const data = await res.json();
       const container = document.getElementById("card-container");
       container.innerHTML = "";
-  
-      data.forEach(record => {
+
+      (data.records || []).forEach(record => {
         if (!record.plan_name && !record.table_number && !record.people_count && !record.start_time) return;
-  
+
         let last = "", leave = "";
         if (["レモン"].includes(record.plan_name)) {
           last = formatHHMM(record.end_time);
           leave = formatHHMM(record.out_time);
         } else if (["食べ飲み90m", "食べ飲み120m", "スーパー"].includes(record.plan_name)) {
-          last = formatHHMM(record.stay?.replace(/【[^】]*】/g, ""));
-          leave = formatHHMM(record.extensions?.replace(/【[^】]*】/g, ""));
+          last = formatHHMM(record.end_time);
+          leave = formatHHMM(record.out_time);
         }
-  
+
         const card = document.createElement("div");
         card.className = `card-entry plan-${record.plan_name || ""}`;
-  
+
         // 背景色：会計済み → 灰色、請求済み → ピンク
-        if (record.paymentChecked) {
+        if (record.checked && record.checked.paymentChecked) {
           card.style.backgroundColor = "#a9a9a9";
           card.style.color = "black";
-        } else if (record.invoiceChecked) {
+        } else if (record.checked && record.checked.invoiceChecked) {
           card.style.backgroundColor = "#ffc0cb";
           card.style.color = "black";
         }
-  
+
         card.innerHTML = `
           <h5><b>${record.table_number || "-"}</b></h5>
           <p><b>${record.plan_name || "-"}</b></p>
@@ -341,15 +343,15 @@
           <p><strong>ラスト:</strong> ${last}</p>
           <p><strong>アウト:</strong> ${leave}</p>
         `;
-  
+
         container.appendChild(card);
       });
-  
+
       if (container.innerHTML.trim() === "") {
         container.innerHTML = `<p>データがありません</p>`;
       }
     }
-    
+
     document.addEventListener("DOMContentLoaded", () => {
       const cardDateInput = document.getElementById("cardSelectedDate");
       cardDateInput.value = new Date().toISOString().slice(0, 10);
@@ -365,13 +367,13 @@
     document.addEventListener("DOMContentLoaded", () => {
       const dateInput = document.getElementById("selectedDate");
       const refresher = document.getElementById("refresher");
-  
+
       dateInput.value = new Date().toISOString().slice(0, 10);
       fetchData();
       setInterval(fetchData, 60000);
-  
+
       dateInput.addEventListener("change", fetchData);
-  
+
       // Refresh
       refresher.addEventListener('ionRefresh', (event) => {
         fetchData().finally(() => {
