@@ -444,11 +444,13 @@ def table_data_api(request):
 
             # extensions: 空あるいはNoneであればNullを返す
             ext_val = None
-            if extensions not in ("", None):
+            if extensions not in ("", None):  # 0も通す
                 try:
                     ext_val = int(extensions)
                 except Exception:
                     ext_val = extensions
+            elif extensions == 0 or extensions == "0":
+                ext_val = 0
 
             records.append({
                 "row_number": r.row_number,
