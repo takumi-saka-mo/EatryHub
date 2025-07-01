@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}Error 503 - Eatry Hub{% endblock %}</title>
+        {% load static %}
+        <link rel="shortcut icon" type="image/png" href="{% static 'favicon.ico' %}" />
+        <link rel="stylesheet" href="{% static 'EatryHub/error.css' %}">
+    </head>
+    <body>
+        <div class="container">
+            <div class="boo-wrapper">
+            <div class="boo">
+                <div class="face"></div>
+            </div>
+            <div class="shadow"></div>
+        
+            <h1>503</h1>
+            <h1>Whoops!</h1>
+            <h2>Offline for maintenance</h2>
+            <p>
+                This app is undergoing maintenance right now. Please check back later.
+            </p>
+            <p>{{ error }}</p>
+            <p>管理者にお問い合わせください。</p>
+            </div>
+        </div>    
+    </body>
+</html>

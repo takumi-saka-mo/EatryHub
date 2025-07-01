@@ -93,6 +93,46 @@
     .table-container {
       padding-bottom: env(safe-area-inset-bottom);
     }
+
+    /* 格子線 */
+    ion-grid, ion-row, ion-col {
+      --border-color: #ccc;
+      --border-width: 0.5px;
+    }
+    ion-row {
+      border-bottom: var(--border-width) solid var(--border-color);
+    }
+    ion-col {
+      border-right: var(--border-width) solid var(--border-color);
+      border-left: var(--border-width) solid var(--border-color);
+      border-top: var(--border-width) solid var(--border-color);
+      border-bottom: var(--border-width) solid var(--border-color);
+      padding: 4px 2px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    /* 卓番・人数の幅を小さく */
+    ion-row ion-col:nth-child(1),
+    ion-row ion-col:nth-child(3) {
+      max-width: 48px;
+      min-width: 32px;
+      width: 8vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* プラン名の列を広げる・改行防止・省略表示・フォントサイズ小さめ */
+    ion-row ion-col:nth-child(2) {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 140px;
+      min-width: 90px;
+      width: 32vw;
+      display: inline-block;
+      vertical-align: middle;
+      font-size: 0.85em;
+    }
   </style>
 </head>
 <body>
@@ -124,8 +164,29 @@
               <ion-title>ホーム</ion-title>
             </ion-toolbar>
           </ion-header>
-            <p>ホームタブ - 作成中</p>
-            <ion-checkbox label-placement="start">Label at the Start</ion-checkbox>
+            <ion-card color="light">
+              <ion-card-header>
+                <ion-card-title>リリースノート</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                ✔ モバイル版がリリースされました（2025/07/01）<br>
+              </ion-card-content>
+              </ion-card>
+
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>モバイルアプリのインストール</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <ion-button id="install-button" expand="block" style="display:none;">ホーム画面に追加</ion-button>
+              </ion-card-content>
+          </ion-card>
+
+            <ion-content class="ion-padding">
+            <h4>本日の状況</h4>
+            <ion-list id="seat-status-list"></ion-list>
+
+          </ion-content>
         </ion-content>
       </ion-tab>
 
@@ -171,23 +232,21 @@
               refreshing-text="更新中...">
             </ion-refresher-content>
           </ion-refresher>
-      
+
           <ion-content class="ion-padding">
             <input type="date" id="selectedDate" class="form-control" />
             <div class="table-container mb-5">
-              <table>
-                <thead>
-                  <tr>
-                    <th>卓番</th>
-                    <th>プラン</th>
-                    <th>人数</th>
-                    <th>開始</th>
-                    <th>ラスト</th>
-                    <th>アウト</th>
-                  </tr>
-                </thead>
-                <tbody id="table-body"></tbody>
-              </table>
+              <ion-grid>
+                <ion-row>
+                  <ion-col>卓番</ion-col>
+                  <ion-col>プラン</ion-col>
+                  <ion-col>人数</ion-col>
+                  <ion-col>開始</ion-col>
+                  <ion-col>ラスト</ion-col>
+                  <ion-col>アウト</ion-col>
+                </ion-row>
+                <div id="table-body"></div>
+              </ion-grid>
             </div>
           </ion-content>
         </ion-content>
@@ -201,20 +260,25 @@
           </ion-header>
           <ion-content class="ion-padding">
             <ion-item-group>
-              <ion-item detail="true" routerLink="/main/settings/account">
-                <ion-icon name="person-circle-outline" slot="start" size="small" class="menu-icon color-primary"></ion-icon>
-                <ion-label i18n>アカウント</ion-label>
+              <!-- 通知権限確認 -->
+              <ion-item detail="true" button onclick="requestNotificationPermission()">
+                <ion-icon name="notifications-outline" slot="start" size="small"></ion-icon>
+                <ion-label>通知許可をリクエスト</ion-label>
               </ion-item>
-              <ion-item detail="true" routerLink="/main/settings/printer">
-                <ion-icon name="print-outline" slot="start" size="small" class="menu-icon color-tertiary"></ion-icon>
-                <ion-label i18n>プリンタ</ion-label>
-              </ion-item>
-              <ion-item>
-                <ion-icon slot="start" size="small" class="menu-icon color-warning" name="moon"></ion-icon>
-                <ion-toggle [(ngModel)]="isDark" (ionChange)="vm.changeTheme(isDark())"
-                ><ng-container i18n>ダークモードを利用</ng-container></ion-toggle
-                >
-              </ion-item>
+              <ion-item detail="true" button onclick="logoutUser()">
+              <ion-icon name="log-out-outline" slot="start"></ion-icon>
+              <ion-label>ログアウト</ion-label>
+            </ion-item>
+            <ion-item detail="true" button onclick="clearLocalCache()">
+              <ion-icon name="trash-outline" slot="start"></ion-icon>
+              <ion-label>ローカルキャッシュ削除</ion-label>
+            </ion-item>
+
+            <ion-item detail="false">
+              <ion-icon name="hardware-chip-outline" slot="start"></ion-icon>
+              <ion-label>バージョン情報</ion-label>
+              <ion-note slot="end">v1.0.0</ion-note>
+            </ion-item>
             </ion-item-group>
           </ion-content>
         </ion-content>
@@ -223,6 +287,34 @@
   </ion-app>
 
   <script>
+    // サービスワーカ
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/mobile/service-worker.js')
+        .then(() => console.log('✔ Service Worker registered'))
+        .catch(err => console.error('✘ Service Worker failed', err));
+    }
+      // install-buttonイベント
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    // ページロード完了後にボタン表示＆イベント追加
+    window.addEventListener('load', () => {
+      const installBtn = document.getElementById('install-button');
+      if (installBtn) {
+        installBtn.style.display = 'block';
+        installBtn.addEventListener('click', async () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to install: ${outcome}`);
+            deferredPrompt = null;
+          }
+        });
+      }
+    });
     function formatHHMM(value) {
       const raw = String(value || "").trim();
       if (/^\d{4}$/.test(raw)) {
@@ -248,6 +340,80 @@
       return t ? t < new Date() : false;
     }
 
+    function logoutUser() {
+      alert("ログアウト処理（未実装）");
+      // 店舗切り替え機能実装予定
+    }
+
+    function requestNotificationPermission() {
+      if (!('Notification' in window)) {
+        alert('このブラウザは通知に対応していません');
+        return;
+      }
+      Notification.requestPermission().then(permission => {
+        alert(`通知の許可状態: ${permission}`);
+      });
+    }
+    function clearLocalCache() {
+      localStorage.clear();
+      sessionStorage.clear();
+      location.reload();
+      alert("キャッシュを削除しました.")
+    }
+  async function calculateSeatStatus(records) {
+    const now = new Date();
+    const totalTables = new Set();
+    const status = {
+      total: 0,
+      inUse: 0,
+      vacant: 0,
+      autoExtended: 0,
+      invoiced: 0,
+      overdue: 0
+    };
+
+    records.forEach(record => {
+      const table = record.table_number || "";
+      if (!table) return;
+
+      totalTables.add(table);
+
+      const start = record.start_time;
+      const out = record.out_time;
+      const hasStarted = start && String(start).trim() !== "";
+      const hasPaid = record.checked?.paymentChecked;
+      const hasInvoiced = record.checked?.invoiceChecked;
+
+      if (hasStarted && !hasPaid) {
+        status.inUse++;
+      }
+
+      if (!hasStarted) {
+        status.vacant++;
+      }
+
+      if (record.extensions && record.extensions > 0 && record.plan_name === "レモン") {
+        status.autoExtended++;
+      }
+
+      if (hasInvoiced && !hasPaid) {
+        status.invoiced++;
+      }
+
+      try {
+        const outDate = getTimeFromHHMM(out);
+        if (outDate && outDate < now && !hasPaid) {
+          status.overdue++;
+        }
+      } catch (e) {
+        console.error(`Invalid out_time for record ${record.table_number}: ${out}`, e);
+      }
+    });
+
+    status.total = totalTables.size;
+    return status;
+  }
+
     async function fetchData() {
       const date = document.getElementById("selectedDate").value || new Date().toISOString().slice(0, 10);
       const res = await fetch(`/TimeManagement/table-data-api/?selected_date=${date}`);
@@ -255,53 +421,91 @@
       const tbody = document.getElementById("table-body");
       tbody.innerHTML = "";
 
-      (data.records || []).forEach(record => {
+      // ソート: 白(未チェック)→ピンク(請求済み)→グレー(会計済み)
+      function getColorOrder(record) {
+        if (record.checked && record.checked.paymentChecked) return 2; // グレー
+        if (record.checked && record.checked.invoiceChecked) return 1; // ピンク
+        return 0; // 白
+      }
+      const sortedRecords = (data.records || []).slice().sort((a, b) => getColorOrder(a) - getColorOrder(b));
+
+      sortedRecords.forEach(record => {
         if (!record.plan_name && !record.table_number && !record.people_count && !record.start_time) return;
 
         let last = "", leave = "";
-        if (["レモン"].includes(record.plan_name)) {
+        // 自動延長プランの場合
+        if (record.has_auto_extend) {
           last = formatHHMM(record.end_time);
           leave = formatHHMM(record.out_time);
-        } else if (["食べ飲み90m", "食べ飲み120m", "スーパー"].includes(record.plan_name)) {
+        } else if (record.has_lo && record.has_out) {
+          // 時間制プランの場合
+          last = formatHHMM(record.end_time);
+          leave = formatHHMM(record.out_time);
+        } else {
+          // 単品等ノーマルプラン
           last = formatHHMM(record.end_time);
           leave = formatHHMM(record.out_time);
         }
 
-        const tr = document.createElement("tr");
+        // ion-row生成
+        const row = document.createElement("ion-row");
 
         // 背景色指定：会計済み → 灰色、請求済み → ピンク
         if (record.checked && record.checked.paymentChecked) {
-          tr.style.backgroundColor = "#a9a9a9";
-          tr.style.color = "black";
+          row.style.backgroundColor = "#a9a9a9";
+          row.style.color = "black";
         } else if (record.checked && record.checked.invoiceChecked) {
-          tr.style.backgroundColor = "#ffc0cb";
-          tr.style.color = "black";
-        }
-        tr.innerHTML = `
-          <td>${record.table_number || ""}</td>
-          <td>${record.plan_name || ""}</td>
-          <td>${record.people_count || ""}</td>
-          <td>${formatHHMM(record.start_time)}</td>
-          <td>${last}</td>
-          <td>${leave}</td>
-        `;
-
-        const lastTd = tr.children[4];
-        const leaveTd = tr.children[5];
-
-        if (isPast(last) && !(record.checked && record.checked.invoiceChecked)) {
-          lastTd.classList.add("alert-late");
-        }
-        if (isPast(leave) && !(record.checked && record.checked.paymentChecked)) {
-          leaveTd.classList.add("alert-late");
+          row.style.backgroundColor = "#ffc0cb";
+          row.style.color = "black";
         }
 
-        tbody.appendChild(tr);
+        // 各セル
+        const cols = [
+          record.table_number || "",
+          record.plan_name || "",
+          record.people_count || "",
+          formatHHMM(record.start_time),
+          last,
+          leave
+        ];
+
+        cols.forEach((val, idx) => {
+          const col = document.createElement("ion-col");
+          col.textContent = val;
+          // ラスト・アウトの遅延アラート
+          if (idx === 4 && isPast(last) && !(record.checked && record.checked.invoiceChecked)) {
+            col.classList.add("alert-late");
+          }
+          if (idx === 5 && isPast(leave) && !(record.checked && record.checked.paymentChecked)) {
+            col.classList.add("alert-late");
+          }
+          row.appendChild(col);
+        });
+
+        tbody.appendChild(row);
       });
 
       if (tbody.innerHTML.trim() === "") {
-        tbody.innerHTML = `<tr><td colspan="7">データがありません</td></tr>`;
+        const row = document.createElement("ion-row");
+        const col = document.createElement("ion-col");
+        col.setAttribute("size", "12");
+        col.textContent = "データがありません";
+        row.appendChild(col);
+        tbody.appendChild(row);
       }
+    }
+
+    async function updateSeatStatus() {
+      const res = await fetch(`/TimeManagement/table-data-api/`);
+      const data = await res.json();
+      const status = await calculateSeatStatus(data.records);
+
+      const list = document.getElementById("seat-status-list");
+      list.innerHTML = `
+        <ion-item><ion-label>使用中</ion-label><ion-note slot="end">${status.inUse}</ion-note></ion-item>
+        <ion-item><ion-label>請求済み未会計</ion-label><ion-note slot="end">${status.invoiced}</ion-note></ion-item>
+        <ion-item><ion-label>アウト超過</ion-label><ion-note slot="end">${status.overdue}</ion-note></ion-item>
+      `;
     }
 
     async function fetchCardData() {
@@ -315,10 +519,16 @@
         if (!record.plan_name && !record.table_number && !record.people_count && !record.start_time) return;
 
         let last = "", leave = "";
-        if (["レモン"].includes(record.plan_name)) {
+        // 自動延長プランの場合
+        if (record.has_auto_extend) { 
           last = formatHHMM(record.end_time);
           leave = formatHHMM(record.out_time);
-        } else if (["食べ飲み90m", "食べ飲み120m", "スーパー"].includes(record.plan_name)) {
+        } else if (record.has_lo && record.has_out) {
+          // 時間制プランの場合 
+          last = formatHHMM(record.end_time);
+          leave = formatHHMM(record.out_time);
+        } else {
+          // 単品等ノーマルプラン
           last = formatHHMM(record.end_time);
           leave = formatHHMM(record.out_time);
         }
@@ -365,6 +575,7 @@
       document.getElementById("selectedDate").addEventListener("change", fetchData);
     });
     document.addEventListener("DOMContentLoaded", () => {
+      updateSeatStatus();
       const dateInput = document.getElementById("selectedDate");
       const refresher = document.getElementById("refresher");
 

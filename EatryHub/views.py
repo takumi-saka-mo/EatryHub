@@ -47,7 +47,7 @@ def mobile_view(request):
 def home(request):
     user_store = request.user.store
     if user_store is None:
-        return render(request, 'EatryHub/error.html', {
+        return render(request, 'error-pages/error.html', {
             'error': "店舗情報が設定されていません。店舗情報を登録してください。"
         })
 

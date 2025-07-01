@@ -32,3 +32,6 @@ staticfiles/admin
 # データベースcsv
 timemanagementrecord.csv
 timemanagement.csv
+
+# 編集中のファイル
+fixed_table.py

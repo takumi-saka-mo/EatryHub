@@ -168,28 +168,6 @@
     </table>
 </div>
 <script>
-    // --- グローバル関数として定義 ---
-    // 4桁数字を"【ラスト】HH:MM"や"【アウト】HH:MM"に変換する関数
-    function formatLO(val) {
-        if (/^\d{4}$/.test(val)) {
-            return `【ラスト】${val.slice(0,2)}:${val.slice(2,4)}`;
-        }
-        return val;
-    }
-    function formatOUT(val) {
-        if (/^\d{4}$/.test(val)) {
-            return `【アウト】${val.slice(0,2)}:${val.slice(2,4)}`;
-        }
-        return val;
-    }
-    // 4桁数字を"HH:MM"に変換する関数（退店時間用）
-    function formatHHMM(val) {
-        if (/^\d{4}$/.test(val)) {
-            return `${val.slice(0,2)}:${val.slice(2,4)}`;
-        }
-        return val;
-    }
-
     $(document).ready(function(){
         console.log("Using updateUrl:", updateUrl);
         let $activeCell = null;
@@ -215,6 +193,27 @@
             else if(plan === "単品"){ color = '#696969'; }
             $(this).css('background-color', color);
             });
+        }
+
+        // 4桁数字を"【ラスト】HH:MM"や"【アウト】HH:MM"に変換する関数
+        function formatLO(val) {
+            if (/^\d{4}$/.test(val)) {
+                return `【ラスト】${val.slice(0,2)}:${val.slice(2,4)}`;
+            }
+            return val;
+        }
+        function formatOUT(val) {
+            if (/^\d{4}$/.test(val)) {
+                return `【アウト】${val.slice(0,2)}:${val.slice(2,4)}`;
+            }
+            return val;
+        }
+        // 4桁数字を"HH:MM"に変換する関数（退店時間用）
+        function formatHHMM(val) {
+            if (/^\d{4}$/.test(val)) {
+                return `${val.slice(0,2)}:${val.slice(2,4)}`;
+            }
+            return val;
         }
 
         // --- 追加: 初期描画時にもラベル付与 ---
@@ -512,7 +511,6 @@
             })
             .on("change", 'td input[type="checkbox"]', function(){
             const row = $(this).closest("tr").data("row-id");
-            const col = $(this).data("col");
             const checkboxes = {
                 col11: $('td[data-row="'+row+'"][data-col="11"] input[type="checkbox"]').prop("checked") ? "true" : "false",
                 col12: $('td[data-row="'+row+'"][data-col="12"] input[type="checkbox"]').prop("checked") ? "true" : "false",
@@ -520,7 +518,7 @@
                 col14: $('td[data-row="'+row+'"][data-col="14"] input[type="checkbox"]').prop("checked") ? "true" : "false"
             };
             const plan = $(`td[data-row="${row}"][data-col="1"] select`).val();
-            if (plan === "単品" && col == 14) {
+            if (plan === "単品") {
                 // 終了時間を現在時刻に更新
                 const now = new Date();
                 const hours = now.getHours().toString().padStart(2, '0');

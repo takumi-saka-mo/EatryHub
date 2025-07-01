@@ -60,6 +60,12 @@ margin-left: 0.5em;
     border-left: 2px solid red !important;
 }
 
+.today_marker {
+    background-color: red;
+    height: 100%;
+    width: 2px;
+    z-index: 1000;
+}
 
 .gantt_task_content {
     background-color: #32cd32 !important;
