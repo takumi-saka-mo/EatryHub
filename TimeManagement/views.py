@@ -433,10 +433,11 @@ def table_data_api(request):
                     end_time_disp = end or ""
                 # 時間制プランの場合
                 elif plan_meta and plan_meta.has_lo() and plan_meta.has_out():
-                    end_time_disp = time_calculator.calculate_LO(r.start_time, plan_meta.timed_lo_min)
-                    out_time_disp =  time_calculator.calculate_OUT(r.start_time, plan_meta.timed_out_min)
-                    extensions = ""
-                    stay = ""
+                    # ここで4桁時刻をセット
+                    stay = time_calculator.calculate_LO(r.start_time, plan_meta.timed_lo_min)
+                    extensions = time_calculator.calculate_OUT(r.start_time, plan_meta.timed_out_min)
+                    end_time_disp = stay
+                    out_time_disp = extensions
                 else:
                     end_time_disp = to_hhmm(end)
             else:

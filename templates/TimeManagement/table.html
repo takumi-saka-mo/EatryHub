@@ -674,12 +674,15 @@
                         document.querySelector(`td[data-row="${row}"][data-col="4"]`).textContent = record.start_time || "";
                     if (record.end_time !== undefined)
                         document.querySelector(`td[data-row="${row}"][data-col="5"]`).textContent = record.end_time || "";
-                    if (record.stay !== undefined)
-                        document.querySelector(`td[data-row="${row}"][data-col="6"]`).textContent = formatLO(record.stay || "");
+                    if (record.stay !== undefined) {
+                        const val = record.stay || "";
+                        document.querySelector(`td[data-row="${row}"][data-col="6"]`).textContent =
+                            /^\d{4}$/.test(val) ? formatLO(val) : val;
+                    }
                     if (record.extensions !== undefined) {
-                        // 0も明示的に表示
                         const extVal = (record.extensions === 0 || record.extensions === "0") ? "0" : (record.extensions || "");
-                        document.querySelector(`td[data-row="${row}"][data-col="7"]`).textContent = formatOUT(extVal);
+                        document.querySelector(`td[data-row="${row}"][data-col="7"]`).textContent =
+                            /^\d{4}$/.test(extVal) ? formatOUT(extVal) : extVal;
                     }
                     if (record.water_time !== undefined)
                         document.querySelector(`td[data-row="${row}"][data-col="8"]`).textContent = record.water_time || "";
