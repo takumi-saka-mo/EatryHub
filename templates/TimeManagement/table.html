@@ -113,7 +113,13 @@
                             </td>
                         {% elif col == 7 %}
                             <td data-row="{{ row }}" data-col="7" class="read-only" tabindex="-1" id="extensions-{{ row }}">
-                                {% if record %}{{ record.calculated_col7 }}{% endif %}
+                                {% if record %}
+                                    {% if record.calculated_col7 is not None %}
+                                        {{ record.calculated_col7 }}
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                {% endif %}
                             </td>
                         {% elif col == 8 %}
                             <td data-row="{{ row }}" data-col="8" class="read-only" tabindex="-1" id="water_time-{{ row }}">
@@ -670,8 +676,11 @@
                         document.querySelector(`td[data-row="${row}"][data-col="5"]`).textContent = record.end_time || "";
                     if (record.stay !== undefined)
                         document.querySelector(`td[data-row="${row}"][data-col="6"]`).textContent = formatLO(record.stay || "");
-                    if (record.extensions !== undefined)
-                        document.querySelector(`td[data-row="${row}"][data-col="7"]`).textContent = formatOUT(record.extensions || "");
+                    if (record.extensions !== undefined) {
+                        // 0も明示的に表示
+                        const extVal = (record.extensions === 0 || record.extensions === "0") ? "0" : (record.extensions || "");
+                        document.querySelector(`td[data-row="${row}"][data-col="7"]`).textContent = formatOUT(extVal);
+                    }
                     if (record.water_time !== undefined)
                         document.querySelector(`td[data-row="${row}"][data-col="8"]`).textContent = record.water_time || "";
                     if (record.out_time !== undefined)
