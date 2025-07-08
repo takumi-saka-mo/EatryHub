@@ -352,6 +352,12 @@
       }
       Notification.requestPermission().then(permission => {
         alert(`通知の許可状態: ${permission}`);
+        if (permission === 'granted') {
+          // 許可されたらすぐにテスト通知
+          new Notification('EatryHub', {
+            body: '通知が有効になりました！',
+          });
+        }
       });
     }
     function clearLocalCache() {
