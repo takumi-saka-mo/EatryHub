@@ -490,6 +490,13 @@ def mobile_view(request):
     """
     return render(request, 'TimeManagement/mobile_view.html')
 
+
+def duplicate_error_help(request):
+    """
+    テーブルデータ重複エラーの復旧方法説明ページ(静的ページ)
+    """
+    return render(request, 'help/duplicate_error.html')
+
 # viewsのメイン処理
 class TimeManagementProcessor:
     def __init__(self, record, row_id, col_number, value):

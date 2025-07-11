@@ -27,6 +27,7 @@
         <input type="date" id="selected_date" name="selected_date" value="{{ selected_date }}">
         <button type="submit">表示</button>
       </form>
+      <a href="{% url 'TimeManagement:duplicate_error' %}" target="_blank">エラー発生時の復旧手順</a>
     </header>
 
 {% load get_item %}

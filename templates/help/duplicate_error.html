@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% load static %}
+  <title>エラー発生時の復旧手順</title>
+  <style>
+    body { font-family: sans-serif; background: #f9f9f9; color: #333; padding: 20px; }
+    .container { max-width: 800px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 30px; }
+    h1 { font-size: 1.8rem; margin-bottom: 0.5em; }
+    h2 { font-size: 1.4rem; margin-top: 1.5em; }
+    p { line-height: 1.6; }
+    ol { margin-left: 1.2em; }
+    li { margin-bottom: 1.5em; }
+    .step-img { width: 100%; height: auto; margin: 16px 0; border: 1px solid #ddd; border-radius: 4px; }
+    .note { background: #fff3cd; border-left: 4px solid #ffeeba; padding: 12px; margin-top: 1em; border-radius: 4px; }
+    .footer { font-size: 0.85rem; color: #666; text-align: center; margin-top: 2em; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>レコード重複エラー発生時の復旧手順</h1>
+    <p>同一テーブルに複数の同一行レコードが登録された場合、サーバーエラーが発生します。以下の手順で復旧してください。</p>
+
+    <h2>1. ページをリロード または Esc キー押下</h2>
+    <p>ブラウザで <strong>Ctrl + R</strong> (Mac: <strong>⌘ + R</strong>) を押すか、<strong>Esc</strong> キーを押してエラーモーダルを閉じ、ページを再読み込みします。</p>
+    <p>これにより、エラーが解消される場合があります。</p>
+
+    <h2>2. 管理画面で重複レコードを削除</h2>
+    <ol>
+      <li>
+        <p>管理画面にアクセスするには、<strong>ホーム</strong> → <strong>管理画面</strong> をクリックします。</p>
+        <img class="step-img" src="{% static 'help/images/home.png' %}" alt="ホーム画面">
+      </li>
+      <li>
+        <p><strong>Time Management Records</strong> を選択して、データ編集画面を開きます。</p>
+        <img class="step-img" src="{% static 'help/images/records.png' %}" alt="データ編集画面">
+      </li>
+      <li>
+        <p>重複している<em>行番号</em>を確認し、該当レコードのチェックボックスにチェックを入れます。</p>
+      </li>
+      <li>
+        <p>画面上部のプルダウンメニューから <strong>選択されたレコードの削除</strong> を選び、<strong>実行</strong> ボタンをクリックします。</p>
+        <img class="step-img" src="{% static 'help/images/delete_records.png' %}" alt="レコード削除画面">
+      </li>
+      <li>
+        <p>確認ダイアログが表示されたら、<strong>OK</strong> を押して削除を確定します。</p>
+      </li>
+    </ol>
+
+    <h2>3. 再度ページをリロード</h2>
+    <p>削除完了後、再度 <strong>Ctrl + R</strong> (Mac: <strong>⌘ + R</strong>) を押してページをリロードし、正常動作を確認します。</p>
+    
+    <div class="note">
+      <p>▶ <strong>注意:</strong>
+        <li>削除されたデータは復旧できません。慎重に操作してください。</li>
+        <li>データベースを直接操作せず、必ず管理画面から復旧作業を行ってください。</li>
+       
+    </p>
+    </div>
+
+    <div class="footer">
+      <p>最新の手順は<a href="mailto:takumi.saka.mo0107@gmail.com">#管理者</a>までお問い合わせください。</p>
+      
+    </div>
+  </div>
+</body>
+</html>
